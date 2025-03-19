@@ -1,0 +1,53 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/Fonts/NotoSans_Condensed-Medium.ttf",
+      "sha1": "d178eb55c4ecb4a7b3f11253dea49b9419f4892a"
+    },
+    {
+      "path": "src/assets/Fonts/NotoSans_Condensed-Regular.ttf",
+      "sha1": "d1d52feb5f1202c48e25f1dfffa99dcfec6d2998"
+    },
+    {
+      "path": "src/assets/Fonts/NotoSans_Condensed-SemiBold.ttf",
+      "sha1": "54a3454d7830bfebce91cccc0e2319b9313c4388"
+    },
+    {
+      "path": "src/assets/Fonts/NotoSans_ExtraCondensed-Bold.ttf",
+      "sha1": "7c7e9e3d34ecc21a82011c11861504043ee366b3"
+    },
+    {
+      "path": "src/assets/Fonts/NotoSans_ExtraCondensed-Regular.ttf",
+      "sha1": "c495337496dcb9aa07db410c634211ab869a633b"
+    },
+    {
+      "path": "src/assets/Fonts/NotoSans_ExtraCondensed-SemiBold.ttf",
+      "sha1": "4c970526281b0d7ee9e687d5da0d8db0c5cac237"
+    },
+    {
+      "path": "src/assets/Fonts/NotoSans_SemiCondensed-Bold.ttf",
+      "sha1": "bffd0bc4d8280d3e60f941544bb03f26de3fde20"
+    },
+    {
+      "path": "src/assets/Fonts/NotoSans_SemiCondensed-ExtraBold.ttf",
+      "sha1": "e84cfd832ded554b49e157e6df4a5face05b2955"
+    },
+    {
+      "path": "src/assets/Fonts/OpenSans_Condensed-Regular.ttf",
+      "sha1": "02ff457da3d6a5cbd9b724d67ddfe04a475629e4"
+    },
+    {
+      "path": "src/assets/Fonts/OpenSans_Condensed-SemiBold.ttf",
+      "sha1": "4cdfa2d1c0f59e850270303fba59a2ee9c7fa9b6"
+    },
+    {
+      "path": "src/assets/Fonts/OpenSans_SemiCondensed-Bold.ttf",
+      "sha1": "0eaebb398eb9c4b76a4a4b35e14bfce27143a343"
+    },
+    {
+      "path": "src/assets/Fonts/OpenSans_SemiCondensed-Medium.ttf",
+      "sha1": "4cb07b1df33da931e34dd4ee8b05bad1176fe015"
+    }
+  ]
+}
