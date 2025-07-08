@@ -1,5 +1,5 @@
 import { View, Text, Image, Pressable } from 'react-native'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import Video from 'react-native-video'
 import ProfileSwitch from '../atoms/ProfileSwitch'
 import CustomDropdown from '../atoms/CustomDropDown'
@@ -19,17 +19,23 @@ const ProfileScreen = () => {
   const [isDarkMode, setIsDarkMode] = useState('darkMode');
   const [selectedServer, setSelectedServer] = useState("samehadaku");
   const [selectedLanguage, setSelectedLanguage] = useState("id");
+  const videoRef = useRef(null);
 
   return (
     <View style={{flex: 1, backgroundColor: '#000'}}>
       <View style={{height: 200, width: '100%'}}>
           <Video
+            ref={videoRef}
             source={require('../assets/LiveWallpaper/Profile_banner.mp4')}
             style={{ width: "100%", height: "100%" }}
             controls={false}
             repeat={true}
             muted={true}
             resizeMode="cover"
+            playWhenInactive={true}
+            onPlaybackResume={() => videoRef.current.play()}
+            // onBuffer={() => console.log("Buffering...")}
+            onError={(e) => console.log(e)}
           />
       </View>
       <LinearGradient 

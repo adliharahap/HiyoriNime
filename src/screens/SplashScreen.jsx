@@ -3,15 +3,39 @@ import React, { useEffect, useRef } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { version } from '../../package.json'
+import { auth } from '../../firebase/firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SplashScreen = () => {
   const navigation = useNavigation();
 
-  useEffect(() => {
+    useEffect(() => {
+    const checkAppState = async () => {
+      const onboardingStatus = await AsyncStorage.getItem('onboardingStatus');
+
+      if (onboardingStatus === 'done') {
+        // ✅ Cek login Google (Firebase Auth)
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            // Sudah login
+            navigation.replace('MainScreen');
+          } else {
+            // Belum login
+            navigation.replace('LoginScreen');
+          }
+        });
+      } else {
+        // 🚧 Belum selesai onboarding
+        navigation.replace('OnboardingScreen');
+      }
+    };
+
+    // Simulasi delay splash biar kerasa loading 🌀
     setTimeout(() => {
-        navigation.navigate("MainScreen");
-    }, 4000);
-  }, [])
+      checkAppState();
+    }, 4000); // bisa kamu ganti lebih cepat/lambat
+  }, []);
 
   return (
     <LinearGradient colors={['#1a001f', '#000']} style={styles.container}>
