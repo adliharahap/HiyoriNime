@@ -16,10 +16,62 @@ import ListAllAnime from './src/screens/ListAnimeScreen/ListAllAnime';
 import LisenceScreen from './src/components/ProfileComponent/LisenceScreen';
 import AboutScreen from './src/components/ProfileComponent/AboutScreen';
 import SplashScreen from './src/screens/SplashScreen';
+import OnboardingScreen from './src/screens/Onboarding/OnboardingScreen';
+import LoginScreen from './src/screens/LoginScreen';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { Alert } from 'react-native';
+import { signOut } from 'firebase/auth';
+import { auth } from './firebase/firebaseConfig';
 
 const Stack = createNativeStackNavigator();
 
 const App = () => {
+
+    const handleLogout = () => {
+      Alert.alert(
+        'Konfirmasi Logout 🧐',
+        'Apakah kamu yakin ingin keluar dari akun Google kamu?',
+        [
+          {
+            text: 'Batal ❌',
+            style: 'cancel',
+          },
+          {
+            text: 'Ya, Logout 🚪',
+            onPress: async () => {
+              try {
+                // Logout dari Firebase
+                await signOut(auth);
+  
+                // Logout juga dari Google Sign-In
+                await GoogleSignin.signOut();
+  
+                Alert.alert('👋 Sampai jumpa!', 'Kamu berhasil logout.');
+              } catch (error) {
+                console.error('Logout error:', error);
+                Alert.alert(
+                  'Logout Gagal 😵',
+                  error.message || 'Terjadi kesalahan saat logout.',
+                );
+              }
+            },
+          },
+        ],
+        {cancelable: true},
+      );
+    };
+
+  // React.useEffect(() => {
+  //   handleLogout();
+  // })
+
+  React.useEffect(()=>{
+    GoogleSignin.configure({
+      webClientId: "941395741581-dqdgs7b9phq590nq9s0lhl5id00on34f.apps.googleusercontent.com", 
+      offlineAccess: true,
+    })  
+  },[])
+
   return (
     <Provider store={store}>
       <NavigationContainer>
@@ -27,6 +79,8 @@ const App = () => {
           screenOptions={{headerShown: false, animation: 'slide_from_bottom'}}
           initialRouteName="SplashScreen">
           <Stack.Screen name="SplashScreen" component={SplashScreen} />
+          <Stack.Screen name="LoginScreen" component={LoginScreen} />
+          <Stack.Screen name="OnboardingScreen" component={OnboardingScreen} />
           <Stack.Screen name="MainScreen" component={MainScreen} />
           <Stack.Screen name="Notification" component={NotificationScreen} />
           <Stack.Screen name="ListAllAnime" component={ListAllAnime} />
