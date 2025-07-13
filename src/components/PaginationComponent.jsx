@@ -31,34 +31,54 @@ const PaginationComponent = ({currentPage, totalPages, onPageChange}) => {
   };
 
   return (
-    <View style={{height: 80, width: '100%', justifyContent: 'center', alignItems: 'center', position: 'absolute', bottom: 0, backgroundColor: 'rgb(54, 51, 56)', borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
+    <View
+      style={{
+        height: 60,
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'absolute',
+        bottom: 0,
+        backgroundColor: 'rgb(54, 51, 56)',
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+      }}>
       <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-        <View style={{width: 70, justifyContent: 'center', alignItems: 'center'}}>
-          {/* Tombol Previous */}
-          <TouchableOpacity
-            onPress={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            style={{
-              height: 40,
-              width: 40,
-              borderRadius: 30,
-              backgroundColor: currentPage === 1 ? '#ddd' : '#ce009c',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <PrevIcon
-              size={20}
-              color={currentPage === totalPages ? '#aaa' : '#fff'}
-            />
-          </TouchableOpacity>
-        </View>
+        {currentPage !== 1 && (
+          <View
+            style={{width: 70, justifyContent: 'center', alignItems: 'center'}}>
+            {/* Tombol Previous */}
+            <TouchableOpacity
+              onPress={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              style={{
+                height: 40,
+                width: 40,
+                borderRadius: 30,
+                justifyContent: 'center',
+                alignItems: 'center',
+                opacity: currentPage === 1 ? 0.3 : 1,
+              }}>
+              <PrevIcon
+                size={20}
+                color={currentPage === totalPages ? '#aaa' : '#fff'}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
 
-        <View style={{flex:1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
           {/* Nomor Halaman */}
           {generatePageNumbers().map((page, index) => (
             <TouchableOpacity
@@ -69,18 +89,14 @@ const PaginationComponent = ({currentPage, totalPages, onPageChange}) => {
                 height: 34,
                 width: 34,
                 marginHorizontal: 3,
-                borderRadius: 5,
-                borderWidth: 2,
-                borderColor: page === currentPage ? '#ce009c' : '#fff',
                 justifyContent: 'center',
                 alignItems: 'center',
-                
               }}>
               <Text
                 style={{
-                  color: page === currentPage ? '#ce009c' : '#fff',
-                  fontFamily: 'NotoSans_SemiCondensed-Bold',
-                  fontSize: 15,
+                  color: page === currentPage ? '#f33421' : '#fff',
+                  fontFamily: 'Poppins-Regular',
+                  fontSize: 16,
                 }}>
                 {page}
               </Text>
@@ -88,7 +104,9 @@ const PaginationComponent = ({currentPage, totalPages, onPageChange}) => {
           ))}
         </View>
 
-        <View style={{width: 70, justifyContent: 'center', alignItems: 'center'}}>
+          {currentPage !== totalPages && (
+        <View
+          style={{width: 70, justifyContent: 'center', alignItems: 'center'}}>
           {/* Tombol Next */}
           <TouchableOpacity
             onPress={() => onPageChange(currentPage + 1)}
@@ -97,9 +115,9 @@ const PaginationComponent = ({currentPage, totalPages, onPageChange}) => {
               height: 40,
               width: 40,
               borderRadius: 30,
-              backgroundColor: currentPage === totalPages ? '#ddd' : '#ce009c',
               justifyContent: 'center',
               alignItems: 'center',
+              opacity: currentPage === totalPages ? 0.3 : 1,
             }}>
             <NextIcon
               size={20}
@@ -107,6 +125,7 @@ const PaginationComponent = ({currentPage, totalPages, onPageChange}) => {
             />
           </TouchableOpacity>
         </View>
+          )}
       </View>
     </View>
   );

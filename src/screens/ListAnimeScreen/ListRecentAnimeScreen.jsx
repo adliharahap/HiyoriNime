@@ -4,17 +4,14 @@ import {
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
-  Image,
-  ScrollView,
-  Pressable,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import axios from 'axios';
 import PaginationComponent from '../../components/PaginationComponent';
-import LinearGradient from 'react-native-linear-gradient';
 import BackIcon from '../../assets/Icons/BackIcon';
 import {useNavigation} from '@react-navigation/native';
+import {fetchRecent} from '../../utils/api/service';
+import AnimeCardItemRecent from '../../components/ListAnimeComponent/AnimeCardItemRecent';
 
 const ListRecentAnimeScreen = () => {
   const navigation = useNavigation();
@@ -25,20 +22,23 @@ const ListRecentAnimeScreen = () => {
 
   // 🔥 Fetch Data dari API
   const fetchAnimeData = async page => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `https://wajik-anime-api.vercel.app/samehadaku/recent?page=${page}`,
-      );
+    setLoading(true); // mulai loading
 
-      if (response.data && response.data.data && response.data.data.animeList) {
-        setAnimeList(response.data.data.animeList); // Simpan daftar anime
-        setTotalPages(response.data.pagination.totalPages); // Simpan total halaman
+    try {
+      const response = await fetchRecent(page);
+
+      // Cek struktur data
+      if (response?.data?.animeList) {
+        setAnimeList(response.data.animeList);
+        setTotalPages(response.pagination?.totalPages ?? 1);
+      } else {
+        console.warn('Data anime tidak ditemukan dalam response');
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('❌ Error fetching anime data:', error);
     }
-    setLoading(false);
+
+    setLoading(false); // selesai loading
   };
 
   // 🔄 Fetch pertama kali
@@ -104,65 +104,15 @@ const ListRecentAnimeScreen = () => {
             keyExtractor={(item, index) => index.toString()}
             showsVerticalScrollIndicator={false}
             renderItem={({item}) => (
-              <Pressable
+              <AnimeCardItemRecent
+                item={item}
                 onPress={() =>
-                  navigation.navigate('DetailAnime', {animeId: item.animeId, animeTitle: item.title})
+                  navigation.navigate('DetailAnime', {
+                    animeId: item.animeId,
+                    animeTitle: item.title,
+                  })
                 }
-                android_ripple={{
-                  color: 'rgba(255,255,255,0.2)',
-                  borderless: false,
-                }}
-                style={{
-                  flexDirection: 'row',
-                  padding: 10,
-                  borderBottomWidth: 1,
-                  borderBottomColor: '#333',
-                  position: 'relative',
-                }}>
-                <Image
-                  source={{uri: item.poster}}
-                  style={{
-                    width: 105,
-                    height: 125,
-                    borderRadius: 5,
-                    marginRight: 15,
-                  }}
-                />
-                <View style={{flex: 1, gap: 8}}>
-                  <Text
-                    numberOfLines={3}
-                    style={{
-                      color: '#fff',
-                      fontSize: 17,
-                      fontFamily: 'NotoSans_SemiCondensed-Bold',
-                    }}>
-                    {item.title}
-                  </Text>
-                  <Text
-                    style={{
-                      color: 'rgba(255,255,255,1)',
-                      fontSize: 12,
-                      backgroundColor: '#0FD312',
-                      paddingVertical: 3,
-                      fontFamily: 'NotoSans_SemiCondensed-Bold',
-                      width: 80,
-                      textAlign: 'center',
-                      borderRadius: 30,
-                    }}
-                    numberOfLines={1}>
-                    Episode {item.episodes}
-                  </Text>
-                  <Text
-                    style={{
-                      color: '#aaa',
-                      fontSize: 15,
-                      fontFamily: 'OpenSans_Condensed-SemiBold',
-                    }}
-                    numberOfLines={1}>
-                    Release {item.releasedOn}
-                  </Text>
-                </View>
-              </Pressable>
+              />
             )}
           />
         )}

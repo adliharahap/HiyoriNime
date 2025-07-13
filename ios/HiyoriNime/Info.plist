@@ -49,6 +49,16 @@
 	<false/>
 	<key>UIAppFonts</key>
 	<array>
+		<string>Poppins-Bold.ttf</string>
+		<string>Poppins-Medium.ttf</string>
+		<string>Poppins-Regular.ttf</string>
+		<string>Poppins-SemiBold.ttf</string>
+		<string>Roboto-Bold.ttf</string>
+		<string>Roboto-Medium.ttf</string>
+		<string>Roboto-Regular.ttf</string>
+		<string>Montserrat-Medium.ttf</string>
+		<string>Montserrat-Regular.ttf</string>
+		<string>Montserrat-SemiBold.ttf</string>
 		<string>NotoSans_Condensed-Medium.ttf</string>
 		<string>NotoSans_Condensed-Regular.ttf</string>
 		<string>NotoSans_Condensed-SemiBold.ttf</string>

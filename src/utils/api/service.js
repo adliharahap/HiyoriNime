@@ -1,6 +1,12 @@
 import axios from 'axios';
+import { API_BASE_URL, API_KEY } from '@env';
 
-const BASE_URL = 'https://wajik-anime-api.vercel.app/samehadaku';
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    Authorization: API_KEY,
+  },
+});
 
 /**
  * Fungsi untuk melakukan GET request ke API.
@@ -10,12 +16,12 @@ const BASE_URL = 'https://wajik-anime-api.vercel.app/samehadaku';
  */
 const fetchData = async (endpoint, params = {}) => {
   try {
-    const response = await axios.get(`${BASE_URL}${endpoint}`, {
+    const response = await apiClient.get(endpoint, {
       params: { page: 1, ...params }, // Default page = 1
     });
     return response.data;
   } catch (error) {
-    console.log(`Error fetching ${endpoint}:`, error);
+    console.log(`❌ Error fetching ${endpoint}:`, error);
     throw error;
   }
 };
@@ -37,4 +43,3 @@ export const fetchAnimeDetail = (animeId) => fetchData(`/anime/${animeId}`);
 export const fetchEpisode = (episodeId) => fetchData(`/episode/${episodeId}`);
 export const fetchServer = (serverId) => fetchData(`/server/${serverId}`);
 export const fetchBatchDetail = (batchId) => fetchData(`/batch/${batchId}`);
-

@@ -13,6 +13,8 @@ import axios from 'axios';
 import PaginationComponent from '../../components/PaginationComponent';
 import BackIcon from '../../assets/Icons/BackIcon';
 import { useNavigation } from '@react-navigation/native';
+import { fetchOngoing } from '../../utils/api/service';
+import AnimeCardItem from '../../components/ListAnimeComponent/AnimeCardItem';
 
 const ListAnimeOngoing = () => {
   const navigation = useNavigation();
@@ -25,13 +27,13 @@ const ListAnimeOngoing = () => {
   const fetchAnimeData = async page => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `https://wajik-anime-api.vercel.app/samehadaku/ongoing?page=${page}`,
-      );
+      const response = await fetchOngoing(page);
 
-      if (response.data && response.data.data && response.data.data.animeList) {
-        setAnimeList(response.data.data.animeList); // Simpan daftar anime
-        setTotalPages(response.data.pagination.totalPages); // Simpan total halaman
+      if (response?.data?.animeList) {
+        setAnimeList(response.data.animeList);
+        setTotalPages(response.pagination?.totalPages ?? 1);
+      } else {
+        console.warn('Data anime tidak ditemukan dalam response');
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -76,52 +78,9 @@ const ListAnimeOngoing = () => {
         ) : (
           <FlatList
             data={animeList}
-            style={{flex: 1}}
             keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => <AnimeCardItem item={item} />}
             showsVerticalScrollIndicator={false}
-            renderItem={({item}) => (
-              <Pressable
-                onPress={() => navigation.navigate('DetailAnime', { animeId: item.animeId, animeTitle: item.title })}
-                android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: false }}
-                style={{
-                  flexDirection: 'row',
-                  padding: 10,
-                  borderBottomWidth: 1,
-                  borderBottomColor: '#333',
-                  position: 'relative',
-                }}>
-                <Image
-                  source={{uri: item.poster}}
-                  style={{
-                    width: 105,
-                    height: 125,
-                    borderRadius: 5,
-                    marginRight: 10,
-                  }}
-                />
-                <View style={{flex: 1, gap: 10}}>
-                  <Text
-                    numberOfLines={3}
-                    style={{color: '#fff', fontSize: 17, fontFamily: 'NotoSans_SemiCondensed-Bold'}}>
-                    {item.title}
-                  </Text>
-                  <View style={{width: '100%', flexDirection: 'row', gap: 10}}>
-                    <Text style={{color: 'rgba(255,255,255,1)', fontSize: 12, backgroundColor: '#0FD312', paddingVertical: 3, fontFamily: 'NotoSans_SemiCondensed-Bold', textAlign: 'center', borderRadius: 30, paddingHorizontal: 20}} numberOfLines={1}>
-                      {item.type}
-                    </Text>
-                    <Text style={{color: 'rgba(255,255,255,1)', fontSize: 12, backgroundColor: item.status === 'Completed' ? '#00a2ff' : item.status === 'Ongoing' ? '#ff6d1e' : 'gray', paddingVertical: 3, fontFamily: 'NotoSans_SemiCondensed-Bold', textAlign: 'center', borderRadius: 30, paddingHorizontal: 20}} numberOfLines={1}>
-                      {item.status}
-                    </Text>
-                    <Text style={{color: 'rgba(255,255,255,1)', fontSize: 12, backgroundColor: 'rgba(228,255,0,0.7)', paddingVertical: 3, fontFamily: 'NotoSans_SemiCondensed-Bold', textAlign: 'center', borderRadius: 30, paddingHorizontal: 20}} numberOfLines={1}>
-                      ⭐ {item.score}
-                    </Text>
-                  </View>
-                  <Text style={{color: '#fff', fontSize: 14, fontFamily: 'NotoSans_Condensed-Medium'}} numberOfLines={2}>
-                    Genre : {item.genreList.map(genre => genre.title).join(', ')}
-                  </Text>
-                </View>
-              </Pressable>
-            )}
           />
         )}
       </View>

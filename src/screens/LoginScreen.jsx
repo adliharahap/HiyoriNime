@@ -6,23 +6,102 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ToastAndroid,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   GoogleSignin,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
-import {GoogleAuthProvider, signInWithCredential, signOut} from 'firebase/auth';
+import {
+  GoogleAuthProvider,
+  sendPasswordResetEmail,
+  signInWithCredential,
+  signInWithEmailAndPassword,
+  signOut,
+} from 'firebase/auth';
 import {auth} from '../../firebase/firebaseConfig';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Svg, { Path } from 'react-native-svg';
 
 const LoginScreen = () => {
-    const navigation = useNavigation();
+  const navigation = useNavigation();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
 
+  useEffect(() => {
+    // Cek apakah ada data login disimpan
+    const loadStoredCredentials = async () => {
+      const storedEmail = await AsyncStorage.getItem('email');
+      const storedPassword = await AsyncStorage.getItem('password');
+      const storedRemember = await AsyncStorage.getItem('remember');
+
+      if (storedRemember === 'true') {
+        setEmail(storedEmail || '');
+        setPassword(storedPassword || '');
+        setRememberMe(true);
+      }
+    };
+    loadStoredCredentials();
+  }, []);
+
+  const handleEmailLogin = async () => {
+    try {
+      if (!email || !password) {
+        Alert.alert('Lengkapi Data', 'Email dan Password wajib diisi');
+        return;
+      }
+
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      await AsyncStorage.setItem('onboardingStatus', 'done');
+
+      if (rememberMe) {
+        await AsyncStorage.setItem('email', email);
+        await AsyncStorage.setItem('password', password);
+        await AsyncStorage.setItem('remember', 'true');
+      } else {
+        await AsyncStorage.removeItem('email');
+        await AsyncStorage.removeItem('password');
+        await AsyncStorage.removeItem('remember');
+      }
+
+      ToastAndroid.show(`Successfully signed in as ${email}`, ToastAndroid.SHORT);
+      navigation.replace('MainScreen');
+    } catch (err) {
+      let message = '';
+      switch (err.code) {
+        case 'auth/invalid-email':
+          message =
+            'Email tidak valid. Pastikan Anda memasukkan email dengan format yang benar, contoh: user@gmail.com';
+          break;
+        default:
+          message =
+            'Kami tidak dapat menemukan akun dengan data yang Anda berikan. Mohon pastikan email dan password anda sudah benar.';
+          break;
+      }
+
+      Alert.alert(
+        'Login Gagal',
+        message,
+        [
+          {
+            text: 'Coba Lagi',
+            onPress: () => {},
+            style: 'destructive', // tombol warna merah 💥
+          },
+        ],
+        {cancelable: true},
+      );
+    }
+  };
 
   const handleGoogleLogin = async () => {
     try {
+      await auth.signOut();
+      await GoogleSignin.signOut();
+
       await GoogleSignin.hasPlayServices();
 
       const result = await GoogleSignin.signIn();
@@ -38,10 +117,10 @@ const LoginScreen = () => {
         const credential = GoogleAuthProvider.credential(idToken);
         await signInWithCredential(auth, credential);
 
-        Alert.alert('🎉 Login Berhasil', `Selamat datang, ${name} ✨`);
+        ToastAndroid.show(`Successfully signed in as ${email}`, ToastAndroid.SHORT);
         await AsyncStorage.setItem('onboardingStatus', 'done');
         setTimeout(() => {
-            navigation.replace("MainScreen");
+          navigation.replace('MainScreen');
         }, 1000);
       } else {
         Alert.alert('Login Gagal 😢', 'User tidak memilih akun Google');
@@ -60,17 +139,31 @@ const LoginScreen = () => {
     }
   };
 
+  const handleResetPassword = async () => {
+  if (!email) {
+    Alert.alert('⚠️ Perhatian', 'Mohon masukkan email terlebih dahulu.');
+    return;
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    Alert.alert('Email Terkirim', 'Link reset password telah dikirim ke email Anda.');
+  } catch (err) {
+    Alert.alert('Gagal Mengirim', err.message || 'Terjadi kesalahan.');
+  }
+  };
+
   const handleLogout = () => {
     Alert.alert(
-      'Konfirmasi Logout 🧐',
+      'Konfirmasi Logout',
       'Apakah kamu yakin ingin keluar dari akun Google kamu?',
       [
         {
-          text: 'Batal ❌',
+          text: 'Batal',
           style: 'cancel',
         },
         {
-          text: 'Ya, Logout 🚪',
+          text: 'Ya, Logout',
           onPress: async () => {
             try {
               // Logout dari Firebase
@@ -79,11 +172,11 @@ const LoginScreen = () => {
               // Logout juga dari Google Sign-In
               await GoogleSignin.signOut();
 
-              Alert.alert('👋 Sampai jumpa!', 'Kamu berhasil logout.');
+              Alert.alert('Sampai jumpa!', 'Kamu berhasil logout.');
             } catch (error) {
               console.error('Logout error:', error);
               Alert.alert(
-                'Logout Gagal 😵',
+                'Logout Gagal',
                 error.message || 'Terjadi kesalahan saat logout.',
               );
             }
@@ -156,6 +249,8 @@ const LoginScreen = () => {
                 }}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
               />
             </View>
             <View style={{marginBottom: 20, paddingHorizontal: 20}}>
@@ -187,6 +282,8 @@ const LoginScreen = () => {
                 }}
                 keyboardType="default"
                 autoCapitalize="none"
+                value={password}
+                onChangeText={setPassword}
                 secureTextEntry={true}
               />
             </View>
@@ -199,7 +296,9 @@ const LoginScreen = () => {
                   paddingHorizontal: 20,
                   marginBottom: 20,
                 }}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <TouchableOpacity
+                  onPress={() => setRememberMe(!rememberMe)}
+                  style={{flexDirection: 'row', alignItems: 'center'}}>
                   <View
                     style={{
                       height: 20,
@@ -208,14 +307,33 @@ const LoginScreen = () => {
                       borderWidth: 1,
                       borderColor: '#fff',
                       marginRight: 8,
-                      backgroundColor: 'transparent', // Ganti ke '#fff' kalau dicentang
-                    }}
-                  />
+                      backgroundColor: rememberMe ? '#fff' : 'transparent',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    {rememberMe && (
+                      <Svg
+                        width={14}
+                        height={14}
+                        viewBox="0 0 24 24"
+                        fill="none">
+                        <Path
+                          d="M20 6L9 17L4 12"
+                          stroke="#000"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </Svg>
+                    )}
+                  </View>
                   <Text style={{color: '#fff', fontSize: 12}}>Remember me</Text>
-                </View>
-                <Text style={{color: '#2196F3', fontSize: 12}}>
-                  Forgot Password?
-                </Text>
+                </TouchableOpacity>
+               <TouchableOpacity onPress={handleResetPassword}>
+                  <Text style={{color: '#2196F3', fontSize: 12}}>
+                    Forgot Password?
+                  </Text>
+               </TouchableOpacity>
               </View>
 
               {/* Tombol Login */}
@@ -226,7 +344,8 @@ const LoginScreen = () => {
                   borderRadius: 10,
                   marginHorizontal: 20,
                   marginBottom: 20,
-                }}>
+                }}
+                onPress={handleEmailLogin}>
                 <Text
                   style={{
                     color: '#fff',
@@ -283,8 +402,7 @@ const LoginScreen = () => {
                   borderWidth: 1,
                   marginBottom: 12,
                 }}
-                onPress={handleLogout}
-                >
+                onPress={handleLogout}>
                 <Text style={{color: '#fff', textAlign: 'center'}}>
                   Masuk sebagai Tamu
                 </Text>
@@ -294,9 +412,14 @@ const LoginScreen = () => {
               <View style={{alignItems: 'center', marginBottom: 40}}>
                 <Text style={{color: '#999'}}>
                   Belum punya akun?{' '}
-                  <Text style={{color: '#2196F3', fontWeight: '500'}}>
-                    Sign Up
-                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate('SignUpScreen');
+                    }}>
+                    <Text style={{color: '#2196F3', fontWeight: '500'}}>
+                      Sign Up
+                    </Text>
+                  </TouchableOpacity>
                 </Text>
               </View>
             </View>
