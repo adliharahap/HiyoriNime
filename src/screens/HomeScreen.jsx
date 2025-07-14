@@ -6,6 +6,7 @@ import HomeComponentList from '../components/HomeComponent/HomeComponentList';
 import { useNavigation } from '@react-navigation/native';
 import { fetchMovies, fetchOngoing, fetchPopular, fetchRecent } from '../utils/api/service';
 import HomeComponentRecentList from '../components/HomeComponent/HomeComponentRecentList';
+import getCurrentUserInfo from '../utils/getCurrentUserInfo';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -27,6 +28,7 @@ const HomeScreen = () => {
       setPopularAnime(popular?.data?.animeList || []);
       setOngoingAnime(ongoing?.data?.animeList || []);
       setMovieAnime(movies?.data?.animeList || []);
+
     } catch (error) {
       console.error("❌ Error fetching anime:", error);
     } finally {

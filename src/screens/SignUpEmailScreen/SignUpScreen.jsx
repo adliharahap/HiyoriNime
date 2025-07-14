@@ -13,6 +13,8 @@ import {
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { auth } from '../../../firebase/firebaseConfig';
 import LinearGradient from 'react-native-linear-gradient';
+import EyeOnIcon from '../../assets/Icons/EyeOnIcon';
+import EyeOffIcon from '../../assets/Icons/EyeOffIcon';
 
 const SignUpScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
@@ -22,6 +24,9 @@ const SignUpScreen = ({navigation}) => {
 
   const [passwordError, setPasswordError] = useState('');
   const [confirmError, setConfirmError] = useState('');
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validateEmail = text => {
     setEmail(text);
@@ -156,14 +161,35 @@ const handleSignUp = async () => {
                 <Text style={styles.error}>{passwordError}</Text>
               ) : null}
             </View>
-            <TextInput
-              placeholder="6+ karakter, huruf besar, angka & simbol"
-              placeholderTextColor="#aaa"
-              secureTextEntry
-              value={password}
-              onChangeText={validatePassword}
-              style={styles.input}
-            />
+            <View style={{position: 'relative'}}>
+                <TextInput
+                  placeholder="Masukkan Password kamu"
+                  placeholderTextColor="#aaa"
+                  style={styles.input}
+                  keyboardType="default"
+                  autoCapitalize="none"
+                  value={password}
+                  onChangeText={validatePassword}
+                  secureTextEntry={!showPassword}
+                />
+
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: 12,
+                    top: '40%',
+                    transform: [{translateY: -12}],
+                  }}>
+                  {showPassword ? (
+                    // Icon: Eye Open
+                    <EyeOnIcon color='#646262ff' size={22} />
+                  ) : (
+                    // Icon: Eye Off
+                    <EyeOffIcon color='#646262ff' size={22} />
+                  )}
+                </TouchableOpacity>
+              </View>
 
             {/* Konfirmasi Password */}
             <View
@@ -173,14 +199,35 @@ const handleSignUp = async () => {
                 <Text style={styles.error}>{confirmError}</Text>
               ) : null}
             </View>
-            <TextInput
-              placeholder="Ulangi password kamu"
-              placeholderTextColor="#aaa"
-              secureTextEntry
-              value={confirmPassword}
-              onChangeText={validateConfirm}
-              style={styles.input}
-            />
+            <View style={{position: 'relative'}}>
+                <TextInput
+                  placeholder="Masukkan Password kamu"
+                  placeholderTextColor="#aaa"
+                  style={styles.input}
+                  keyboardType="default"
+                  autoCapitalize="none"
+                  value={confirmPassword}
+                  onChangeText={validateConfirm}
+                  secureTextEntry={!showConfirmPassword}
+                />
+
+                <TouchableOpacity
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: 12,
+                    top: '40%',
+                    transform: [{translateY: -12}],
+                  }}>
+                  {showConfirmPassword ? (
+                    // Icon: Eye Open
+                    <EyeOnIcon color='#646262ff' size={22} />
+                  ) : (
+                    // Icon: Eye Off
+                    <EyeOffIcon color='#646262ff' size={22} />
+                  )}
+                </TouchableOpacity>
+              </View>
 
             {/* Tombol Daftar */}
             <TouchableOpacity style={styles.button} onPress={handleSignUp}>

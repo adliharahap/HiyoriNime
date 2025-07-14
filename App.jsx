@@ -39,7 +39,7 @@ const App = () => {
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{headerShown: false, animation: 'slide_from_bottom'}}
-          initialRouteName="SplashScreen">
+          initialRouteName="LoginScreen">
           <Stack.Screen name="SplashScreen" component={SplashScreen} />
           <Stack.Screen name="LoginScreen" component={LoginScreen} />
           <Stack.Screen name="SignUpScreen" component={SignUpScreen}   options={{

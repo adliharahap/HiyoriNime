@@ -23,13 +23,16 @@ import {
 import {auth} from '../../firebase/firebaseConfig';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Svg, { Path } from 'react-native-svg';
+import Svg, {Path} from 'react-native-svg';
+import EyeOffIcon from '../assets/Icons/EyeOffIcon';
+import EyeOnIcon from '../assets/Icons/EyeOnIcon';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     // Cek apakah ada data login disimpan
@@ -67,7 +70,10 @@ const LoginScreen = () => {
         await AsyncStorage.removeItem('remember');
       }
 
-      ToastAndroid.show(`Successfully signed in as ${email}`, ToastAndroid.SHORT);
+      ToastAndroid.show(
+        `Successfully signed in as ${email}`,
+        ToastAndroid.SHORT,
+      );
       navigation.replace('MainScreen');
     } catch (err) {
       let message = '';
@@ -108,7 +114,7 @@ const LoginScreen = () => {
 
       // ✅ Hasil sign-in universal bentuknya { type: 'success', data: { ... } }
       if (result.type === 'success') {
-        const {idToken, email, name} = result.data;
+        const {idToken} = result.data;
 
         if (!idToken) {
           throw new Error('ID Token tidak ditemukan 😵');
@@ -117,7 +123,10 @@ const LoginScreen = () => {
         const credential = GoogleAuthProvider.credential(idToken);
         await signInWithCredential(auth, credential);
 
-        ToastAndroid.show(`Successfully signed in as ${email}`, ToastAndroid.SHORT);
+        ToastAndroid.show(
+          `Successfully signed in as ${result.data.user.email || result.data.user.name}`,
+          ToastAndroid.SHORT,
+        );
         await AsyncStorage.setItem('onboardingStatus', 'done');
         setTimeout(() => {
           navigation.replace('MainScreen');
@@ -140,17 +149,20 @@ const LoginScreen = () => {
   };
 
   const handleResetPassword = async () => {
-  if (!email) {
-    Alert.alert('⚠️ Perhatian', 'Mohon masukkan email terlebih dahulu.');
-    return;
-  }
+    if (!email) {
+      Alert.alert('⚠️ Perhatian', 'Mohon masukkan email terlebih dahulu.');
+      return;
+    }
 
-  try {
-    await sendPasswordResetEmail(auth, email);
-    Alert.alert('Email Terkirim', 'Link reset password telah dikirim ke email Anda.');
-  } catch (err) {
-    Alert.alert('Gagal Mengirim', err.message || 'Terjadi kesalahan.');
-  }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      Alert.alert(
+        'Email Terkirim',
+        'Link reset password telah dikirim ke email Anda.',
+      );
+    } catch (err) {
+      Alert.alert('Gagal Mengirim', err.message || 'Terjadi kesalahan.');
+    }
   };
 
   const handleLogout = () => {
@@ -266,26 +278,46 @@ const LoginScreen = () => {
                 Password
               </Text>
 
-              <TextInput
-                placeholder="Masukkan Password kamu"
-                placeholderTextColor="#aaa"
-                style={{
-                  backgroundColor: '#1e1e1e',
-                  color: '#fff',
-                  fontSize: 14,
-                  fontFamily: 'NotoSans_Condensed-Medium',
-                  borderRadius: 10,
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
-                  borderWidth: 1,
-                  borderColor: '#333',
-                }}
-                keyboardType="default"
-                autoCapitalize="none"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={true}
-              />
+              <View style={{position: 'relative'}}>
+                <TextInput
+                  placeholder="Masukkan Password kamu"
+                  placeholderTextColor="#aaa"
+                  style={{
+                    backgroundColor: '#1e1e1e',
+                    color: '#fff',
+                    fontSize: 14,
+                    fontFamily: 'NotoSans_Condensed-Medium',
+                    borderRadius: 10,
+                    paddingVertical: 12,
+                    paddingHorizontal: 16,
+                    borderWidth: 1,
+                    borderColor: '#333',
+                    paddingRight: 45, // space for the eye icon
+                  }}
+                  keyboardType="default"
+                  autoCapitalize="none"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                />
+
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: 12,
+                    top: '50%',
+                    transform: [{translateY: -12}],
+                  }}>
+                  {showPassword ? (
+                    // Icon: Eye Open
+                    <EyeOnIcon color='#646262ff' size={22} />
+                  ) : (
+                    // Icon: Eye Off
+                    <EyeOffIcon color='#646262ff' size={22} />
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
             <View>
               <View
@@ -329,11 +361,11 @@ const LoginScreen = () => {
                   </View>
                   <Text style={{color: '#fff', fontSize: 12}}>Remember me</Text>
                 </TouchableOpacity>
-               <TouchableOpacity onPress={handleResetPassword}>
+                <TouchableOpacity onPress={handleResetPassword}>
                   <Text style={{color: '#2196F3', fontSize: 12}}>
                     Forgot Password?
                   </Text>
-               </TouchableOpacity>
+                </TouchableOpacity>
               </View>
 
               {/* Tombol Login */}
