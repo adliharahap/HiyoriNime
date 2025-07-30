@@ -16,9 +16,9 @@ import {
 import {
   GoogleAuthProvider,
   sendPasswordResetEmail,
+  signInAnonymously,
   signInWithCredential,
   signInWithEmailAndPassword,
-  signOut,
 } from 'firebase/auth';
 import {auth} from '../../firebase/firebaseConfig';
 import {useNavigation} from '@react-navigation/native';
@@ -165,38 +165,18 @@ const LoginScreen = () => {
     }
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Konfirmasi Logout',
-      'Apakah kamu yakin ingin keluar dari akun Google kamu?',
-      [
-        {
-          text: 'Batal',
-          style: 'cancel',
-        },
-        {
-          text: 'Ya, Logout',
-          onPress: async () => {
-            try {
-              // Logout dari Firebase
-              await signOut(auth);
+  const handleGuestLogin = async () => {
+    try {
+      const userCredential = await signInAnonymously(auth);
+      const user = userCredential.user;
+      console.log("User ID:", user.uid);
 
-              // Logout juga dari Google Sign-In
-              await GoogleSignin.signOut();
-
-              Alert.alert('Sampai jumpa!', 'Kamu berhasil logout.');
-            } catch (error) {
-              console.error('Logout error:', error);
-              Alert.alert(
-                'Logout Gagal',
-                error.message || 'Terjadi kesalahan saat logout.',
-              );
-            }
-          },
-        },
-      ],
-      {cancelable: true},
-    );
+      // Arahkan ke halaman utama
+      navigation.replace('MainScreen');
+    } catch (error) {
+      console.error("Error masuk tamu:", error);
+      Alert.alert("Gagal Masuk Tamu", error.message);
+    }
   };
 
   return (
@@ -434,7 +414,7 @@ const LoginScreen = () => {
                   borderWidth: 1,
                   marginBottom: 12,
                 }}
-                onPress={handleLogout}>
+                onPress={handleGuestLogin}>
                 <Text style={{color: '#fff', textAlign: 'center'}}>
                   Masuk sebagai Tamu
                 </Text>

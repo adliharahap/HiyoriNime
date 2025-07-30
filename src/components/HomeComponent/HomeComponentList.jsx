@@ -13,7 +13,7 @@ import {useNavigation} from '@react-navigation/native';
 const HomeComponentList = ({headerTitle, onPress, data, loading}) => {
   const navigation = useNavigation();
   return (
-    <View style={{height: 250, width: '100%', marginBottom: 30}}>
+    <View style={{height: 250, width: '100%', marginBottom: 2}}>
       {/* Header & Title */}
       <View
         style={{
@@ -35,7 +35,7 @@ const HomeComponentList = ({headerTitle, onPress, data, loading}) => {
         <TouchableOpacity onPress={onPress}>
           <Text
             style={{
-              color: 'rgb(25, 202, 28)',
+              color: 'rgba(229, 57, 53, 1)',
               fontFamily: 'NotoSans_Condensed-Regular',
               fontSize: 16,
             }}>

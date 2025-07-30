@@ -22,6 +22,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import SignUpScreen from './src/screens/SignUpEmailScreen/SignUpScreen';
 import VerifyEmailScreen from './src/screens/SignUpEmailScreen/VerifyEmailScreen';
 import { GOOGLE_WEB_CLIENT_ID } from '@env';
+import EditProfile from './src/components/ProfileComponent/EditProfile';
 
 const Stack = createNativeStackNavigator();
 
@@ -39,7 +40,7 @@ const App = () => {
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{headerShown: false, animation: 'slide_from_bottom'}}
-          initialRouteName="LoginScreen">
+          initialRouteName="SplashScreen">
           <Stack.Screen name="SplashScreen" component={SplashScreen} />
           <Stack.Screen name="LoginScreen" component={LoginScreen} />
           <Stack.Screen name="SignUpScreen" component={SignUpScreen}   options={{
@@ -65,6 +66,7 @@ const App = () => {
           <Stack.Screen name="WatchAnime" component={WatchAnimeScreen} options={{ animation: 'fade_from_bottom' }} />
           <Stack.Screen name="Lisence" component={LisenceScreen} />
           <Stack.Screen name="About" component={AboutScreen} />
+          <Stack.Screen name="EditProfile" component={EditProfile} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CloseIcon from '../../assets/Icons/CloseIcon';
 
-const SearchHistoryList = () => {
+const SearchHistoryList = ({ onItemPress }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const [searchHistory, setSearchHistory] = useState([]);
@@ -46,35 +46,36 @@ const SearchHistoryList = () => {
   return (
     <>
       {/* Riwayat Pencarian */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 30, paddingBottom: 20 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 30, paddingBottom: 20, paddingLeft: 10, }}>
         <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>Riwayat Pencarian</Text>
         {searchHistory.length > 0 && (
           <TouchableOpacity onPress={showModal}>
-            <Text style={{ color: '#FF5555', fontSize: 14 }}>Hapus Semua</Text>
+            <Text style={{ color: '#FF5555', fontSize: 14, paddingRight: 15 }}>Hapus Semua</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 30 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 30, paddingLeft: 10, }}>
         {searchHistory.length > 0 ? (
           searchHistory.map((item, index) => (
-            <View
-              key={index}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                paddingVertical: 4,
-                paddingHorizontal: 10,
-                borderRadius: 16,
-                marginRight: 8,
-                marginBottom: 8,
-              }}>
-              <Text style={{ color: '#fff', fontSize: 13, marginRight: 6 }}>{item}</Text>
-              <TouchableOpacity onPress={() => removeHistoryItem(index)}>
-                <CloseIcon color="#aaa" size={14} />
-              </TouchableOpacity>
-            </View>
+          <TouchableOpacity
+            key={index}
+            onPress={() => onItemPress(item)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              paddingVertical: 4,
+              paddingHorizontal: 10,
+              borderRadius: 16,
+              marginRight: 8,
+              marginBottom: 8,
+            }}>
+            <Text style={{ color: '#fff', fontSize: 13, marginRight: 6 }}>{item}</Text>
+            <TouchableOpacity onPress={() => removeHistoryItem(index)}>
+              <CloseIcon color="#aaa" size={14} />
+            </TouchableOpacity>
+          </TouchableOpacity>
           ))
         ) : (
           <Text style={{ color: '#aaa', fontSize: 14, textAlign: 'center', marginTop: 10 }}>

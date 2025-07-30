@@ -25,7 +25,15 @@ import SortirIcon from '../assets/Icons/SortirIcon';
 import {fetchAnimeDetail} from '../utils/api/service';
 import {useNavigation} from '@react-navigation/native';
 import BatchDownloadSection from '../components/BatchDownloadSection';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  doc,
+  setDoc,
+  deleteDoc,
+  getDoc,
+  collection
+} from 'firebase/firestore';
+import { auth, db } from '../../firebase/firebaseConfig';
+
 
 const DetailAnimeScreen = ({route}) => {
   const ScreenHeight = Dimensions.get('screen').height;
@@ -49,14 +57,17 @@ const DetailAnimeScreen = ({route}) => {
 
       const detailAnime = await fetchAnimeDetail(animeId);
       setDetailAnime(detailAnime?.data || []);
+      console.log("data anime detail : ", detailAnime.data);
+      
 
       // Cek apakah anime sudah ada di favorit
-      const storedFavorites = await AsyncStorage.getItem('favoriteAnimes');
-      const favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
-
-      const isAnimeFavorite = favorites.some((anime) => anime.animeId === animeId);
-      setIsFavorite(isAnimeFavorite);
-      
+      // ✅ Cek favorit dari Firestore
+      if (auth.currentUser) {
+        const favRef = doc(db, "users", auth.currentUser.uid, "favorites", animeId);
+        const favSnap = await getDoc(favRef);
+        setIsFavorite(favSnap.exists());
+      }
+            
 
       // Ambil warna dominan setelah data anime tersedia
       if (detailAnime?.data?.poster) {
@@ -82,32 +93,39 @@ const DetailAnimeScreen = ({route}) => {
     isAscending ? a.title - b.title : b.title - a.title,
   );
 
-  const toggleFavorite = async () => {
-    try {
-      const storedFavorites = await AsyncStorage.getItem('favoriteAnimes');
-      let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
-
-      if (isFavorite) {
-        // Hapus dari favorit
-        favorites = favorites.filter((anime) => anime.animeId !== animeId);
-      } else {
-        // Tambahkan ke favorit
-        const newFavorite = {
-          animeId,
-          title: detailAnime?.title?.trim() ? detailAnime.title : animeTitle,
-          score: detailAnime.score?.value,
-          poster: detailAnime.poster,
-          genres: detailAnime.genreList.map((genre) => genre.title),
-        };
-        favorites.push(newFavorite);
-      }
-
-      await AsyncStorage.setItem('favoriteAnimes', JSON.stringify(favorites));
-      setIsFavorite(!isFavorite);
-    } catch (error) {
-      console.error('❌ Error handling favorite:', error);
+const toggleFavorite = async () => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      console.warn("🛑 User belum login!");
+      return;
     }
-  };
+
+    const userId = user.uid;
+    const favRef = doc(db, "users", userId, "favorites", animeId);
+
+    if (isFavorite) {
+      // ❌ Hapus dari Firestore
+      await deleteDoc(favRef);
+      console.log("🗑️ Anime dihapus dari favorit");
+    } else {
+      // ✅ Tambahkan ke Firestore
+      const newFavorite = {
+        animeId,
+        title: detailAnime?.title?.trim() ? detailAnime.title : animeTitle,
+        score: detailAnime.score?.value || "",
+        poster: detailAnime.poster,
+        genres: detailAnime.genreList.map((genre) => genre.title),
+      };
+      await setDoc(favRef, newFavorite);
+      console.log("✅ Anime ditambahkan ke favorit");
+    }
+
+    setIsFavorite(!isFavorite);
+  } catch (error) {
+    console.error("❌ Error handling favorite:", error);
+  }
+};
 
 
   return (

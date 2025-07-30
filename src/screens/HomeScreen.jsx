@@ -6,7 +6,6 @@ import HomeComponentList from '../components/HomeComponent/HomeComponentList';
 import { useNavigation } from '@react-navigation/native';
 import { fetchMovies, fetchOngoing, fetchPopular, fetchRecent } from '../utils/api/service';
 import HomeComponentRecentList from '../components/HomeComponent/HomeComponentRecentList';
-import getCurrentUserInfo from '../utils/getCurrentUserInfo';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -47,7 +46,7 @@ const HomeScreen = () => {
           <ActivityIndicator size="large" color="yellow" />
         </View>
       ) : (
-            <LinearGradient colors={['rgb(12, 2, 27)', '#000']} locations={[0.2, 1]} style={{ flex: 1 }}>
+            <LinearGradient colors={['#000000', 'rgba(81, 8, 10, 1)']} locations={[0.2, 1]} style={{ flex: 1 }}>
             <ScrollView style={{ flex: 1 }} horizontal={false} scrollEventThrottle={80} showsVerticalScrollIndicator={false}>
               {/* Header */}
               <HomeHeaderProfile />
@@ -63,7 +62,7 @@ const HomeScreen = () => {
       
               {/* Anime Movie */}
               <HomeComponentList headerTitle="Anime Movie" onPress={() => navigation.navigate('ListAnimeMovie')} data={movieAnime} loading={loading} />
-                <View style={{height: 80}}></View>
+                <View style={{height: 90}}></View>
             </ScrollView>
           </LinearGradient>
       )}

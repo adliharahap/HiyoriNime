@@ -11,25 +11,36 @@ const SplashScreen = () => {
   const navigation = useNavigation();
 
 useEffect(() => {
+  let unsubscribe;
+
   const checkAppState = async () => {
     const onboardingStatus = await AsyncStorage.getItem('onboardingStatus');
 
     if (onboardingStatus !== 'done') {
       console.log('🍼 Belum onboarding → OnboardingScreen');
-      return navigation.replace('OnboardingScreen');
+      navigation.replace('OnboardingScreen');
+      return;
     }
 
     console.log('⏳ Menunggu Auth State...');
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    console.log('[SplashScreen] useEffect is running');
+
+    unsubscribe = onAuthStateChanged(auth, async user => {
       if (user) {
-        console.log('👤 User login terdeteksi:', user.email);
+        console.log('👤 User login terdeteksi:', user.email || '[Anonymous]');
 
         try {
           await reload(user);
           console.log('🔄 Reload sukses');
 
+          if (user.isAnonymous) {
+            console.log('👻 Anonymous user → MainScreen');
+            navigation.replace('MainScreen');
+            return;
+          }
+
           const isGoogle = user.providerData.some(
-            (provider) => provider.providerId === 'google.com'
+            provider => provider.providerId === 'google.com'
           );
 
           if (isGoogle || user.emailVerified) {
@@ -41,28 +52,31 @@ useEffect(() => {
           }
         } catch (err) {
           console.error('❌ Gagal reload user:', err.message);
-          navigation.replace('LoginScreen'); // fallback biar gak nyangkut
+          navigation.replace('LoginScreen');
         }
       } else {
         console.log('🚫 Belum login → LoginScreen');
         navigation.replace('LoginScreen');
       }
     });
-
-    return () => unsubscribe();
   };
 
   const timer = setTimeout(() => {
     checkAppState();
-  }, 3000); // delay splash 3 detik
+  }, 2000);
 
-  return () => clearTimeout(timer);
+  return () => {
+    console.log('[SplashScreen] useEffect is cleaned up');
+    clearTimeout(timer);
+    if (unsubscribe) unsubscribe();
+  };
 }, []);
 
 
-
   return (
-    <LinearGradient colors={['#1a001f', '#000']} style={styles.container}>
+    <LinearGradient
+      colors={['#000', 'rgba(81, 8, 10, 1)']}
+      style={styles.container}>
       <AnimatedImage />
       <BouncingText />
       <Text

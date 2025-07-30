@@ -12,7 +12,7 @@ const ListAnimeImageCollection = ({title, genre, rating, ImgBackground}) => {
                     <Text style={{color: 'rgba(255,255,255,0.8)', fontFamily: "OpenSans_Condensed-SemiBold", fontSize: 13, textAlign: 'center'}} numberOfLines={1}>Genre: {genre}</Text>
                 </View>
             </LinearGradient>
-            <Text style={{color: 'rgb(255, 255, 255)', fontFamily: "OpenSans_Condensed-SemiBold", fontSize: 12, textAlign: 'center', position: 'absolute', top: 6, left: 6, paddingHorizontal: 6, paddingVertical: 3, backgroundColor: 'rgba(216, 189, 78, 0.7)', borderRadius: 50}} numberOfLines={1}>⭐{rating}</Text>
+            <Text style={{color: 'rgb(255, 255, 255)', fontFamily: "OpenSans_Condensed-SemiBold", fontSize: 12, textAlign: 'center', position: 'absolute', top: 6, left: 6, paddingHorizontal: 6, paddingVertical: 3, backgroundColor: 'rgba(216, 189, 78, 0.8)', borderRadius: 50}} numberOfLines={1}>⭐{rating || 'N/A'}</Text>
         </ImageBackground>
     </>
   )

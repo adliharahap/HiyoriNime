@@ -25,30 +25,31 @@ const ListAnimeByGenre = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const fetchAnimeData = async (page) => {
-    setLoading(true);
-    setError(false);
-    try {
-      const response = await fetchByGenre(genreId, page);
+const fetchAnimeData = async (page) => {
+  setLoading(true);
+  setError(false);
+  try {
+    const response = await fetchByGenre(genreId, page);
 
-      if (response.ok && response.data) {
-        const animeData = response.data.animeList || [];
-        const pagination = response.data.pagination || { totalPages: 1 };
+    if (response.ok && response.data) {
+      const animeData = response.data.animeList || [];
+      const pagination = response.pagination || { totalPages: 1 };
 
-        if (animeData.length === 0) {
-          setError(true);
-        }
-
-        setAnimeList(animeData);
-        setTotalPages(pagination.totalPages);
-      } else {
+      if (animeData.length === 0) {
         setError(true);
       }
-    } catch {
+
+      setAnimeList(animeData);
+      setTotalPages(pagination.totalPages);
+    } else {
       setError(true);
     }
-    setLoading(false);
-  };
+  } catch {
+    setError(true);
+  }
+  setLoading(false);
+};
+
 
   useEffect(() => {
     fetchAnimeData(currentPage);

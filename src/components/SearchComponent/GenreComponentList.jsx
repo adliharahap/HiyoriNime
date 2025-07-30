@@ -31,13 +31,13 @@ const GenreComponentList = () => {
   return (
     <>
       {/* Genre Filter */}
-      <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>Cari Berdasarkan Genre</Text>
+      <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', paddingLeft: 10, }}>Cari Berdasarkan Genre</Text>
 
       {/* Loading Indicator */}
       {loading ? (
         <ActivityIndicator size="large" color="#fff" style={{ marginTop: 20 }} />
       ) : (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 10, paddingTop: 10 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 10, paddingTop: 10, paddingLeft: 10, }}>
           {visibleGenres.map((genre, index) => (
             <TouchableOpacity
               key={index}
@@ -72,6 +72,7 @@ const GenreComponentList = () => {
             borderRadius: 15,
             width: '30%',
             alignItems: 'center',
+            marginLeft: 10,
           }}
           onPress={() => setExpanded(!expanded)}>
           <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>

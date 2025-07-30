@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { CurvedBottomBar } from 'react-native-curved-bottom-bar';
 import HomeScreen from './HomeScreen';
@@ -12,8 +12,32 @@ import ProfileIcon from '../assets/Icons/ProfileIcon';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CollectionIcon from '../assets/Icons/CollectionIcon';
 import CollectionScreen from './CollectionScreen';
+import getCurrentUserInfo from '../utils/getCurrentUserInfo';
+import { useDispatch } from 'react-redux';
+import { setUserData } from '../redux/slices/userSlice';
 
 const MainScreen = () => {
+  const dispatch = useDispatch(); 
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userInfo = await getCurrentUserInfo();
+        if (userInfo) {
+          dispatch(setUserData(userInfo));
+          console.log('✅ Data user:', userInfo);
+        } else {
+          console.log('🚫 Belum ada user login');
+        }
+      } catch (error) {
+        console.log('Gagal Mendapatkan data User', error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+
   const _renderIcon = (routeName, selectedTab) => {
     let IconComponent;
     switch (routeName) {
@@ -49,21 +73,21 @@ const MainScreen = () => {
         type="DOWN"
         style={styles.bottomBar}
         screenOptions={{ headerShown: false }}
-        height={65}
+        height={50}
         circleWidth={50}
         circlePosition={"CENTER"}
-        bgColor="rgb(26, 24, 24)"
+        bgColor="rgba(0, 0, 0, 1)"
         initialRouteName="Home"
         borderTopLeftRight
         renderCircle={({ selectedTab, navigate }) => (
           <Animated.View
             style={[
               styles.btnCircleUp,
-              { backgroundColor: selectedTab === 'Search' ? '#9999cc' : 'rgb(64, 46, 34)' },
+              { backgroundColor: selectedTab === 'Search' ? 'rgba(132, 131, 128, 1)' : 'rgba(0, 0, 0, 1)' },
             ]}
           >
             <TouchableOpacity style={styles.button} onPress={() => navigate('Search')}>
-              <SearchIcon size={30} color={selectedTab === 'Search' ? '#fff' : '#ccc'} />
+              <SearchIcon size={28} color={selectedTab === 'Search' ? '#fff' : '#ccc'} />
             </TouchableOpacity>
           </Animated.View>
         )}

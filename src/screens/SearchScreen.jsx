@@ -10,6 +10,7 @@ import { searchAnime } from '../utils/api/service';
 import ListAnimeSearch from '../components/SearchComponent/ListAnimeSearch';
 import CloseIcon from '../assets/Icons/CloseIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LinearGradient from 'react-native-linear-gradient';
 
 const SearchScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -24,52 +25,40 @@ const SearchScreen = () => {
         if (isSearching) handleSearch(currentPage);
     }, [currentPage]);
 
-    const handleSearch = async (page = 1) => {
-        if (searchQuery.trim() === '') return;
-    
-        setIsSearching(true);
-        setLoading(true);
-    
-        try {
-            // Simpan history pencarian di AsyncStorage
-            const storedHistory = await AsyncStorage.getItem('searchHistory');
-            let searchHistory = storedHistory ? JSON.parse(storedHistory) : [];
-    
-            // Cek apakah query sudah ada dalam history, jika ada hapus dulu
-            searchHistory = searchHistory.filter(item => item !== searchQuery);
-    
-            // Tambahkan query baru di awal array
-            searchHistory.unshift(searchQuery);
-    
-            // Batasi hanya 10 pencarian terbaru
-            if (searchHistory.length > 10) {
-                searchHistory.pop();
-            }
-    
-            // Simpan kembali ke AsyncStorage
-            await AsyncStorage.setItem('searchHistory', JSON.stringify(searchHistory));
-    
-            // Lakukan pencarian anime
-            const response = await searchAnime(searchQuery, page);
-            if (response && response.data) {
-                setSearchResults(response.data.animeList || []);
-                setTotalPages(response.pagination.totalPages || 1);
-            }
-        } catch (error) {
-            console.log('Error fetching anime:', error);
-    
-            if (error.response && error.response.status === 404) {
-                setSearchResults([]); // Set hasil pencarian kosong
-                setTotalPages(1);
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
-    
+const handleSearch = async (page = 1, query = searchQuery) => {
+  if (query.trim() === '') return;
+
+  setIsSearching(true);
+  setLoading(true);
+
+  try {
+    // Simpan history pencarian di AsyncStorage
+    const storedHistory = await AsyncStorage.getItem('searchHistory');
+    let searchHistory = storedHistory ? JSON.parse(storedHistory) : [];
+
+    searchHistory = searchHistory.filter(item => item !== query);
+    searchHistory.unshift(query);
+    if (searchHistory.length > 10) searchHistory.pop();
+    await AsyncStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+
+    const response = await searchAnime(query, page);
+    if (response && response.data) {
+      setSearchResults(response.data.animeList || []);
+      setTotalPages(response.pagination.totalPages || 1);
+    }
+  } catch (error) {
+    console.log('Error fetching anime:', error);
+    if (error.response?.status === 404) {
+      setSearchResults([]);
+      setTotalPages(1);
+    }
+  } finally {
+    setLoading(false);
+  }
+};  
 
     return (
-        <View style={{ flex: 1, backgroundColor: 'rgb(12, 2, 27)'}}>
+        <LinearGradient colors={['#000', 'rgba(81, 8, 10, 1)']} style={{ flex: 1}}>
             <HeaderProfileSearch />
             <View
                 style={{
@@ -104,13 +93,18 @@ const SearchScreen = () => {
             <ScrollView showsVerticalScrollIndicator={false}>
                 {!isSearching && (
                     <>
-                        <SearchHistoryList />
+                        <SearchHistoryList onItemPress={(item) => {
+                            setSearchQuery(item);
+                            setIsSearching(true);
+                            handleSearch(1, item);
+                        }} />
                         <GenreComponentList />
                         <TouchableOpacity
                             style={{
                                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
                                 paddingVertical: 10,
-                                borderRadius: 15,
+                                marginHorizontal: 10,
+                                borderRadius: 30,
                                 alignItems: 'center',
                                 marginVertical: 20,
                             }}
@@ -133,7 +127,7 @@ const SearchScreen = () => {
                 )}
                 <View style={{height: 90}}></View>
             </ScrollView>
-        </View>
+        </LinearGradient>
     );
 };
 
