@@ -6,6 +6,7 @@ import HomeComponentList from '../components/HomeComponent/HomeComponentList';
 import { useNavigation } from '@react-navigation/native';
 import { fetchMovies, fetchOngoing, fetchPopular, fetchRecent } from '../utils/api/service';
 import HomeComponentRecentList from '../components/HomeComponent/HomeComponentRecentList';
+import { useSelector } from 'react-redux';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -14,13 +15,14 @@ const HomeScreen = () => {
   const [popularAnime, setPopularAnime] = useState([]);
   const [ongoingAnime, setOngoingAnime] = useState([]);
   const [movieAnime, setMovieAnime] = useState([]);
+  const source = useSelector((state) => state.animeSource.source);
 
   const FetchAnime = async () => {
     try {
-      const recent = await fetchRecent();
-      const popular = await fetchPopular();
-      const ongoing = await fetchOngoing();
-      const movies = await fetchMovies();
+      const recent = await fetchRecent(1, source);
+      const popular = await fetchPopular(1, source);
+      const ongoing = await fetchOngoing(1, source);
+      const movies = await fetchMovies(1, source);
 
       // Simpan ke state, pastikan data tidak undefined
       setRecentAnime(recent?.data?.animeList || []);

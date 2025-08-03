@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, Pressable, FlatList, Modal } from "react-native";
 import { fetchServer } from "../utils/api/service";
+import { useSelector } from "react-redux";
 
 const ServerSelector = ({ serverData, setVideoUrl }) => {
   const [selectedQuality, setSelectedQuality] = useState(null);
@@ -8,6 +9,7 @@ const ServerSelector = ({ serverData, setVideoUrl }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const source = useSelector((state) => state.animeSource.source);
 
   const availableQualities = serverData?.qualities?.filter(q => q.serverList.length > 0) || [];
   const serverList = selectedQuality ? selectedQuality.serverList : [];
@@ -17,7 +19,7 @@ const ServerSelector = ({ serverData, setVideoUrl }) => {
     setModalVisible(false);
   
     try {
-      const response = await fetchServer(server.serverId);
+      const response = await fetchServer(server.serverId, source);
       if (response?.data?.url) {  // Ganti streamingUrl ke url sesuai API
         setVideoUrl(response.data.url);
       } else {

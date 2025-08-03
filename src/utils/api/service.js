@@ -1,45 +1,38 @@
-import axios from 'axios';
-import { API_BASE_URL, API_KEY } from '@env';
+import { createApiClient } from './apiClient';
+import routes from './routes';
 
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    Authorization: API_KEY,
-  },
-});
-
-/**
- * Fungsi untuk melakukan GET request ke API.
- * @param {string} endpoint - Endpoint API (contoh: "/popular").
- * @param {object} params - Parameter tambahan (opsional).
- * @returns {Promise} - Data dari API.
- */
-const fetchData = async (endpoint, params = {}) => {
+const fetchData = async (endpoint, params = {}, source = 'samehadaku') => {
   try {
+    const apiClient = createApiClient(source);
     const response = await apiClient.get(endpoint, {
-      params: { page: 1, ...params }, // Default page = 1
+      params: { page: 1, ...params },
     });
     return response.data;
   } catch (error) {
-    console.log(`❌ Error fetching ${endpoint}:`, error);
+    console.log(`❌ Error fetching ${endpoint} from ${source}:`, error);
     throw error;
   }
 };
 
-// 🔥 Fungsi-fungsi siap pakai untuk API 🔥
-export const fetchHome = () => fetchData('/home');
-export const fetchGenres = () => fetchData('/genres');
-export const fetchAllAnime = (page = 1) => fetchData('/anime', { page });
-export const fetchSchedule = () => fetchData('/schedule');
-export const fetchRecent = (page = 1) => fetchData('/recent', { page });
-export const fetchOngoing = (page = 1, order = 'title') => fetchData('/ongoing', { page, order });
-export const fetchCompleted = (page = 1, order = 'title') => fetchData('/completed', { page, order });
-export const fetchPopular = (page = 1) => fetchData('/popular', { page });
-export const fetchMovies = (page = 1) => fetchData('/movies', { page });
-export const fetchBatch = (page = 1) => fetchData('/batch', { page });
-export const searchAnime = (query, page = 1) => fetchData('/search', { q: query, page });
-export const fetchByGenre = (genreId, page = 1) => fetchData(`/genres/${genreId}`, { page });
-export const fetchAnimeDetail = (animeId) => fetchData(`/anime/${animeId}`);
-export const fetchEpisode = (episodeId) => fetchData(`/episode/${episodeId}`);
-export const fetchServer = (serverId) => fetchData(`/server/${serverId}`);
-export const fetchBatchDetail = (batchId) => fetchData(`/batch/${batchId}`);
+export const fetchHome = (source) => fetchData(routes[source].home, {}, source);
+export const fetchGenres = (source) => fetchData(routes[source].genres, {}, source);
+export const fetchAllAnime = (page = 1, source) => fetchData(routes[source].anime, { page }, source);
+export const fetchSchedule = (source) => fetchData(routes[source].schedule, {}, source);
+export const fetchOngoing = (page = 1, source) => fetchData(routes[source].ongoing, { page }, source);
+export const fetchCompleted = (page = 1, source) => fetchData(routes[source].completed, { page }, source);
+export const searchAnime = (query, page = 1, source) => fetchData(routes[source].search, { q: query, page }, source);
+export const fetchByGenre = (genreId, page = 1, source) => fetchData(routes[source].byGenre(genreId), { page }, source);
+export const fetchAnimeDetail = (animeId, source) => fetchData(routes[source].detail(animeId), {}, source);
+export const fetchEpisode = (episodeId, source) => fetchData(routes[source].episode(episodeId), {}, source);
+export const fetchServer = (serverId, source) => fetchData(routes[source].server(serverId), {}, source);
+export const fetchBatchDetail = (batchId, source) => fetchData(routes[source].batchDetail(batchId), {}, source);
+
+// Optional (kalau cuma Samehadaku yang punya)
+export const fetchPopular = (page = 1, source) =>
+  source === 'samehadaku' ? fetchData(routes[source].popular, { page }, source) : null;
+export const fetchMovies = (page = 1, source) =>
+  source === 'samehadaku' ? fetchData(routes[source].movies, { page }, source) : null;
+export const fetchRecent = (page = 1, source) =>
+  source === 'samehadaku' ? fetchData(routes[source].recent, { page }, source) : null;
+export const fetchBatch = (page = 1, source) =>
+  source === 'samehadaku' ? fetchData(routes[source].batch, { page }, source) : null;

@@ -11,6 +11,7 @@ import {
 import { fetchSchedule } from '../utils/api/service';
 import LinearGradient from 'react-native-linear-gradient';
 import ScheduleComponentList from '../components/ScheduleComponent/ScheduleComponentList';
+import { useSelector } from 'react-redux';
 
 const { width } = Dimensions.get('window');
 
@@ -88,11 +89,12 @@ const ScheduleScreen = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   const scrollRef = useRef(null);
+  const source = useSelector((state) => state.animeSource.source);
 
 useEffect(() => {
   const loadSchedule = async () => {
     try {
-      const response = await fetchSchedule();
+      const response = await fetchSchedule(source);
       if (response.ok) {
         const rawDays = response.data.days;
 

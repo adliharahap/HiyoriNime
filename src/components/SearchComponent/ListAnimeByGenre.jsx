@@ -14,6 +14,7 @@ import BackIcon from '../../assets/Icons/BackIcon';
 import { useNavigation } from '@react-navigation/native';
 import { fetchByGenre } from '../../utils/api/service';
 import _404MessageComponentList from './../_404MessageComponentList';
+import { useSelector } from 'react-redux';
 
 const ListAnimeByGenre = ({ route }) => {
   const navigation = useNavigation();
@@ -24,12 +25,13 @@ const ListAnimeByGenre = ({ route }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const source = useSelector((state) => state.animeSource.source);
 
 const fetchAnimeData = async (page) => {
   setLoading(true);
   setError(false);
   try {
-    const response = await fetchByGenre(genreId, page);
+    const response = await fetchByGenre(genreId, page, source);
 
     if (response.ok && response.data) {
       const animeData = response.data.animeList || [];

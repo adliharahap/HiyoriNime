@@ -12,6 +12,7 @@ import BackIcon from '../../assets/Icons/BackIcon';
 import {useNavigation} from '@react-navigation/native';
 import {fetchRecent} from '../../utils/api/service';
 import AnimeCardItemRecent from '../../components/ListAnimeComponent/AnimeCardItemRecent';
+import { useSelector } from 'react-redux';
 
 const ListRecentAnimeScreen = () => {
   const navigation = useNavigation();
@@ -19,13 +20,14 @@ const ListRecentAnimeScreen = () => {
   const [currentPage, setCurrentPage] = useState(1); // Menyimpan halaman saat ini
   const [totalPages, setTotalPages] = useState(1); // Total halaman dari API
   const [loading, setLoading] = useState(false); // Status loading
+  const source = useSelector((state) => state.animeSource.source);
 
   // 🔥 Fetch Data dari API
   const fetchAnimeData = async page => {
     setLoading(true); // mulai loading
 
     try {
-      const response = await fetchRecent(page);
+      const response = await fetchRecent(page, source);
 
       // Cek struktur data
       if (response?.data?.animeList) {

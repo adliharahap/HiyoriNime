@@ -26,6 +26,11 @@ import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {auth} from '../../firebase/firebaseConfig';
 import {useSelector} from 'react-redux';
 import FastImage from '@d11/react-native-fast-image';
+import HistoryIcon from '../assets/Icons/HistoryIcon';
+import SecurityIcon from '../assets/Icons/SecurityIcon';
+import DeleteAccountIcon from '../assets/Icons/DeleteAccountIcon';
+import FeedbackIcon from '../assets/Icons/FeedbackIcon';
+import TermsPrivacyIcon from '../assets/Icons/TermsPrivacyIcon';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
@@ -171,7 +176,7 @@ const ProfileScreen = () => {
               </View>
             </View>
           </View>
-          <View style={{flex: 1, paddingTop: 30, paddingHorizontal: 20}}>
+          <View style={{flex: 1, paddingTop: 30, paddingHorizontal: 20, paddingBottom: 120}}>
             {/* Header */}
             <View>
               <Text
@@ -225,7 +230,10 @@ const ProfileScreen = () => {
               />
             </View>
 
-            <View
+            <Pressable
+              onPress={() => {
+                navigation.navigate('About');
+              }}
               style={{
                 width: '100%',
                 height: 40,
@@ -235,7 +243,7 @@ const ProfileScreen = () => {
                 flexDirection: 'row',
               }}>
               <View style={{flexDirection: 'row', gap: 10}}>
-                <LanguageIcon size={22} color="#fdfdfd" />
+                <HistoryIcon size={20} color="#fdfdfd" />
                 <Text
                   Text
                   style={{
@@ -244,20 +252,16 @@ const ProfileScreen = () => {
                     fontSize: 16,
                   }}
                   numberOfLines={1}>
-                  Bahasa
+                  History Tontonan
                 </Text>
               </View>
-              <CustomDropdown
-                options={[
-                  {label: 'Indonesia', value: 'id'},
-                  {label: 'English', value: 'en'},
-                ]}
-                selectedOption={selectedLanguage}
-                onSelect={setSelectedLanguage}
-              />
-            </View>
+              <ProfileNextIcon size={16} color="#fdfdfd" />
+            </Pressable>
 
-            <View
+            <Pressable
+              onPress={() => {
+                navigation.navigate('About');
+              }}
               style={{
                 width: '100%',
                 height: 40,
@@ -267,7 +271,7 @@ const ProfileScreen = () => {
                 flexDirection: 'row',
               }}>
               <View style={{flexDirection: 'row', gap: 10}}>
-                <ServerIcon size={22} color="#fdfdfd" />
+                <SecurityIcon size={20} color="#fdfdfd" />
                 <Text
                   Text
                   style={{
@@ -276,20 +280,39 @@ const ProfileScreen = () => {
                     fontSize: 16,
                   }}
                   numberOfLines={1}>
-                  Server
+                  Keamanan / Login Info
                 </Text>
               </View>
-              <CustomDropdown
-                options={[
-                  {label: 'Samehadaku', value: 'samehadaku'},
-                  {label: 'Otakudesu', value: 'otakudesu'},
-                ]}
-                selectedOption={selectedServer}
-                onSelect={setSelectedServer}
-                boxWidth={110}
-                boxHeight={40}
-              />
-            </View>
+              <ProfileNextIcon size={16} color="#fdfdfd" />
+            </Pressable>
+
+            <Pressable
+              onPress={() => {
+                navigation.navigate('About');
+              }}
+              style={{
+                width: '100%',
+                height: 40,
+                marginTop: 10,
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexDirection: 'row',
+              }}>
+              <View style={{flexDirection: 'row', gap: 10}}>
+                <DeleteAccountIcon size={20} color="#fdfdfd" />
+                <Text
+                  Text
+                  style={{
+                    color: '#fdfdfd',
+                    fontFamily: 'NotoSans_SemiCondensed-Bold',
+                    fontSize: 16,
+                  }}
+                  numberOfLines={1}>
+                  Hapus Akun / Reset Data
+                </Text>
+              </View>
+              <ProfileNextIcon size={16} color="#fdfdfd" />
+            </Pressable>
 
             {/* Header */}
             <View style={{marginTop: 20}}>
@@ -363,6 +386,62 @@ const ProfileScreen = () => {
                   }}
                   numberOfLines={1}>
                   Lisensi
+                </Text>
+              </View>
+              <ProfileNextIcon size={16} color="#fdfdfd" />
+            </Pressable>
+
+            <Pressable
+              onPress={() => {
+                navigation.navigate('About');
+              }}
+              style={{
+                width: '100%',
+                height: 40,
+                marginTop: 10,
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexDirection: 'row',
+              }}>
+              <View style={{flexDirection: 'row', gap: 10}}>
+                <FeedbackIcon size={20} color="#fdfdfd" />
+                <Text
+                  Text
+                  style={{
+                    color: '#fdfdfd',
+                    fontFamily: 'NotoSans_SemiCondensed-Bold',
+                    fontSize: 16,
+                  }}
+                  numberOfLines={1}>
+                  Hubungi Developer / Feedback
+                </Text>
+              </View>
+              <ProfileNextIcon size={16} color="#fdfdfd" />
+            </Pressable>
+
+            <Pressable
+              onPress={() => {
+                navigation.navigate('About');
+              }}
+              style={{
+                width: '100%',
+                height: 40,
+                marginTop: 10,
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexDirection: 'row',
+              }}>
+              <View style={{flexDirection: 'row', gap: 10}}>
+                <TermsPrivacyIcon size={20} color="#fdfdfd" />
+                <Text
+                  Text
+                  style={{
+                    color: '#fdfdfd',
+                    fontFamily: 'NotoSans_SemiCondensed-Bold',
+                    fontSize: 16,
+                  }}
+                  numberOfLines={1}>
+                  Syarat & Ketentuan / Kebijakan Privasi
                 </Text>
               </View>
               <ProfileNextIcon size={16} color="#fdfdfd" />

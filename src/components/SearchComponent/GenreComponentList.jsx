@@ -2,17 +2,19 @@ import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { fetchGenres } from '../../utils/api/service';
+import { useSelector } from 'react-redux';
 
 const GenreComponentList = () => {
   const [genres, setGenres] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const navigation = useNavigation();
+  const source = useSelector((state) => state.animeSource.source);
 
   useEffect(() => {
     const loadGenres = async () => {
       try {
-        const response = await fetchGenres();
+        const response = await fetchGenres(source);
         if (response.ok && response.data?.genreList) {
           setGenres(response.data.genreList);
         }

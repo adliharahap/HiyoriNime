@@ -33,6 +33,7 @@ import {
   collection
 } from 'firebase/firestore';
 import { auth, db } from '../../firebase/firebaseConfig';
+import { useSelector } from 'react-redux';
 
 
 const DetailAnimeScreen = ({route}) => {
@@ -46,6 +47,7 @@ const DetailAnimeScreen = ({route}) => {
   const [detailAnime, setDetailAnime] = useState([]);
   const navigation = useNavigation();
   const {animeId, animeTitle} = route.params;
+  const source = useSelector((state) => state.animeSource.source);
 
   const FetchAnimeAndColor = async () => {
     try {
@@ -55,7 +57,7 @@ const DetailAnimeScreen = ({route}) => {
 
       setIsLoading(true); // Set loading sebelum fetch data
 
-      const detailAnime = await fetchAnimeDetail(animeId);
+      const detailAnime = await fetchAnimeDetail(animeId, source);
       setDetailAnime(detailAnime?.data || []);
       console.log("data anime detail : ", detailAnime.data);
       

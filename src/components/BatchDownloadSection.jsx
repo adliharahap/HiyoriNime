@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Modal, ActivityIndicator, ScrollView, StyleSheet, Linking } from "react-native";
-import axios from "axios";
 import { darkenColor } from "../utils/ImageColorModule";
+import { fetchBatchDetail } from "../utils/api/service";
+import { useSelector } from "react-redux";
 
 const BatchDownloadSection = ({ batchList, colorImage }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -9,6 +10,7 @@ const BatchDownloadSection = ({ batchList, colorImage }) => {
   const [downloadData, setDownloadData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const source = useSelector((state) => state.animeSource.source);
 
   // Function untuk membuka modal dan fetch data dari API
   const openModal = async (batch) => {
@@ -18,12 +20,12 @@ const BatchDownloadSection = ({ batchList, colorImage }) => {
     setError(null);
 
     try {
-      const response = await axios.get(
-        `https://wajik-anime-api.vercel.app/samehadaku/batch/${batch.batchId}`
-      );
+      console.log("batch : ", batch);
+      
+      const response = await fetchBatchDetail(batch.batchId, source);
 
-      if (response.data.data?.downloadUrl?.formats) {
-        setDownloadData(response.data.data.downloadUrl.formats);
+      if (response.data?.downloadUrl?.formats) {
+        setDownloadData(response.data.downloadUrl.formats);
       } else {
         setError("Data tidak ditemukan.");
       }

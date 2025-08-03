@@ -12,6 +12,7 @@ import BackIcon from '../../assets/Icons/BackIcon';
 import {useNavigation} from '@react-navigation/native';
 import {fetchPopular} from '../../utils/api/service';
 import AnimeCardItem from '../../components/ListAnimeComponent/AnimeCardItem';
+import { useSelector } from 'react-redux';
 
 const ListPopularAnime = () => {
   const navigation = useNavigation();
@@ -19,12 +20,13 @@ const ListPopularAnime = () => {
   const [currentPage, setCurrentPage] = useState(1); // Menyimpan halaman saat ini
   const [totalPages, setTotalPages] = useState(1); // Total halaman dari API
   const [loading, setLoading] = useState(false); // Status loading
+  const source = useSelector((state) => state.animeSource.source);
 
   // 🔥 Fetch Data dari API
   const fetchAnimeData = async page => {
     setLoading(true);
     try {
-      const response = await fetchPopular(page);
+      const response = await fetchPopular(page, source);
 
       // Cek struktur data
       if (response?.data?.animeList) {

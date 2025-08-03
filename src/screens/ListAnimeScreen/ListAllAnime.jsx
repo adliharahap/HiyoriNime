@@ -15,6 +15,7 @@ import BackIcon from '../../assets/Icons/BackIcon';
 import SearchIcon from '../../assets/Icons/SearchIcon';
 import CloseIcon from '../../assets/Icons/CloseIcon';
 import {fetchAllAnime} from '../../utils/api/service';
+import { useSelector } from 'react-redux';
 
 const ListAllAnime = () => {
   const navigation = useNavigation();
@@ -22,11 +23,12 @@ const ListAllAnime = () => {
   const [filteredAnime, setFilteredAnime] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const source = useSelector((state) => state.animeSource.source);
 
-  const fetchAnimeData = async (page) => {
+  const fetchAnimeData = async (page = 1) => {
     setLoading(true);
     try {
-      const response = await fetchAllAnime();
+      const response = await fetchAllAnime(page, source);
 
       if (response?.data?.list) {
         await setAnimeData(response?.data?.list);

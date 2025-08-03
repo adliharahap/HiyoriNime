@@ -11,6 +11,7 @@ import ListAnimeSearch from '../components/SearchComponent/ListAnimeSearch';
 import CloseIcon from '../assets/Icons/CloseIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
+import { useSelector } from 'react-redux';
 
 const SearchScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -20,6 +21,7 @@ const SearchScreen = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const navigation = useNavigation();
+    const source = useSelector((state) => state.animeSource.source);
 
     useEffect(() => {
         if (isSearching) handleSearch(currentPage);
@@ -41,7 +43,7 @@ const handleSearch = async (page = 1, query = searchQuery) => {
     if (searchHistory.length > 10) searchHistory.pop();
     await AsyncStorage.setItem('searchHistory', JSON.stringify(searchHistory));
 
-    const response = await searchAnime(query, page);
+    const response = await searchAnime(query, page, source);
     if (response && response.data) {
       setSearchResults(response.data.animeList || []);
       setTotalPages(response.pagination.totalPages || 1);
