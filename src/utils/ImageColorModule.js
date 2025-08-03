@@ -4,18 +4,21 @@ const { ImageColorModule } = NativeModules;
 export const getDominantColor = async (source) => {
   try {
     const color = await ImageColorModule.getDominantColor(source);
-    return adjustColor(color); // Cek apakah warna perlu di-darken
+    return adjustColor(color); // ⬅️ Ini sekarang return object { background, text }
   } catch (error) {
     console.error("Error mendapatkan warna dominan:", error);
-    return "#FFFFFF"; // Warna fallback
+    return {
+      background: "#FFFFFF",
+      text: "#FFFFFF",
+    };
   }
 };
 
-
+// 💡 Gelapkan warna
 export const darkenColor = (hex, factor = 0.8) => {
   if (!hex || !hex.startsWith("#") || hex.length !== 7) {
     console.warn("Hex color tidak valid:", hex);
-    return "#000000"; // Fallback ke hitam kalau warna tidak valid
+    return "#000000";
   }
 
   let r = parseInt(hex.substring(1, 3), 16);
@@ -26,33 +29,78 @@ export const darkenColor = (hex, factor = 0.8) => {
   g = Math.max(0, Math.floor(g * factor));
   b = Math.max(0, Math.floor(b * factor));
 
-  // Pastikan output tetap dalam format #RRGGBB
   const toHex = (c) => c.toString(16).padStart(2, "0");
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
+const getLuminance = (hex) => {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
 
-const adjustColor = (hex) => {
+  const a = [r, g, b].map((v) =>
+    v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+  );
+
+  return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+};
+
+export const autoAdjustColor = (hex, darkThreshold = 0.3, lightThreshold = 0.8) => {
+  const luminance = getLuminance(hex);
+
+  if (luminance < darkThreshold) {
+    console.log("🔦 Terlalu gelap, diterangkan");
+    return lightenColor(hex, 1.6);
+  }
+
+  if (luminance > lightThreshold) {
+    console.log("🌘 Terlalu terang, digelapkan");
+    return darkenColor(hex, 0.7);
+  }
+
+  return hex; // Aman, biarkan seperti aslinya
+};
+
+// 💡 Terangkan warna
+export const lightenColor = (hex, factor = 1.2) => {
   if (!hex || !hex.startsWith("#") || hex.length !== 7) {
     console.warn("Hex color tidak valid:", hex);
-    return "#000000"; // Fallback hitam
+    return "#FFFFFF";
   }
 
   let r = parseInt(hex.substring(1, 3), 16);
   let g = parseInt(hex.substring(3, 5), 16);
   let b = parseInt(hex.substring(5, 7), 16);
 
-  // **Cek apakah warna terlalu putih atau abu-abu**
-  const isTooBright = r > 200 && g > 200 && b > 200;
-  const isGray = Math.abs(r - g) < 10 && Math.abs(g - b) < 10; // Warna hampir sama (abu-abu)
+  r = Math.min(255, Math.floor(r * factor));
+  g = Math.min(255, Math.floor(g * factor));
+  b = Math.min(255, Math.floor(b * factor));
 
-  // **Cek apakah warna terlalu kuning** (R & G tinggi, B rendah)
-  const isTooYellow = r > 200 && g > 200 && b < 100;
+  const toHex = (c) => c.toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
 
-  if (isTooBright || isGray || isTooYellow) {
-    console.log("Warna terlalu terang/abu-abu/kuning, menggelapkan...");
-    return darkenColor(hex, 0.7);
+// 🎯 Fungsi penyesuaian warna & teks
+const adjustColor = (hex) => {
+  if (!hex || !hex.startsWith("#") || hex.length !== 7) {
+    console.warn("Hex color tidak valid:", hex);
+    return {
+      background: "#FFFFFF",
+      text: "#000000",
+    };
   }
 
-  return hex; // Warna asli kalau tidak terlalu putih/kuning
+  const adjusted = autoAdjustColor(hex); // 🔁 otomatis dark/light
+  const luminance = getLuminance(adjusted);
+
+  const textColor = luminance > 0.5 ? "#000000" : "#FFFFFF"; // 🧠 teks harus kontras
+
+  return {
+    background: adjusted,
+    text: textColor,
+  };
 };
+
+
+
+

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   ImageBackground,
@@ -12,80 +12,124 @@ import {
   ActivityIndicator,
   VirtualizedList,
   Button,
+  Animated,
+  PanResponder,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {BlurView} from '@react-native-community/blur';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { BlurView } from '@react-native-community/blur';
 import BackIcon from '../assets/Icons/BackIcon';
 import StarIcon from '../assets/Icons/StarIcon';
 import WaveDetailAnimeIcon from '../assets/Icons/WaveDetailAnimeIcon';
-import EpisodeCard from '../components/EpisodeCard';
-import {darkenColor, getDominantColor} from '../utils/ImageColorModule';
+import EpisodeCard from '../components/DetailAnimeComponent/EpisodeCard';
+import { autoAdjustColor, autoLightenIfDark, darkenColor, getDominantColor } from '../utils/ImageColorModule';
 import LinearGradient from 'react-native-linear-gradient';
 import SortirIcon from '../assets/Icons/SortirIcon';
-import {fetchAnimeDetail} from '../utils/api/service';
-import {useNavigation} from '@react-navigation/native';
+import { fetchAnimeDetail, fetchEpisode } from '../utils/api/service';
+import { useNavigation } from '@react-navigation/native';
 import BatchDownloadSection from '../components/BatchDownloadSection';
-import {
-  doc,
-  setDoc,
-  deleteDoc,
-  getDoc,
-  collection
-} from 'firebase/firestore';
+import { doc, setDoc, deleteDoc, getDoc, collection } from 'firebase/firestore';
 import { auth, db } from '../../firebase/firebaseConfig';
 import { useSelector } from 'react-redux';
+import HeaderDetailComponent from '../components/DetailAnimeComponent/HeaderDetailComponent';
+import FlagStatusIcon from '../assets/Icons/DetailAnimeIcon/FlagStatusIcon';
+import TvIcon from '../assets/Icons/DetailAnimeIcon/TvIcon';
+import PlayIcon from '../assets/Icons/DetailAnimeIcon/PlayIcon';
+import DownloadIcon from '../assets/Icons/DetailAnimeIcon/DownloadIcon';
+import FastImage from '@d11/react-native-fast-image';
+import EpisodeCardWithPoster from '../components/DetailAnimeComponent/EpisodeCardWithPoster';
+import AnimeDetailCard from '../components/DetailAnimeComponent/AnimeDetailCard';
 
-
-const DetailAnimeScreen = ({route}) => {
-  const ScreenHeight = Dimensions.get('screen').height;
-  const [showMore, setShowMore] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const [colorImage, setColorImage] = useState('#1b1b1b');
+const DetailAnimeScreen = ({ route }) => {
+  const [colorImage, setColorImage] = useState({
+    background: '#1b1b1b',
+    text: '#ffffff',
+  });
   const [isFavorite, setIsFavorite] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); //buat true lagi kalau design nya sudah selesai
   const [isAscending, setIsAscending] = useState(true);
   const [detailAnime, setDetailAnime] = useState([]);
+  const [imageError, setImageError] = useState(false);
+  const [episodeOne, setEpisodeOne] = useState(null);
+  const [EpsAnimeWithPoster, setEpsAnimeWithPoster] = useState([]);
   const navigation = useNavigation();
-  const {animeId, animeTitle} = route.params;
+  const { animeId, animeTitle } = route.params;
   const source = useSelector((state) => state.animeSource.source);
+
+  const tabTitles = ['Episode', 'Details', 'Synopsis'];
+  const [activeTab, setActiveTab] = useState(0);
+  const scrollX = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const listener = scrollX.addListener(({ value }) => {
+      const newIndex = Math.round(value / Dimensions.get('window').width);
+      if (newIndex !== activeTab) setActiveTab(newIndex);
+    });
+    return () => {
+      scrollX.removeListener(listener);
+    };
+  }, [activeTab]);
 
   const FetchAnimeAndColor = async () => {
     try {
-      if (!animeId) {
-        throw new Error('❌ animeId tidak boleh kosong!');
-      }
+      if (!animeId) throw new Error('❌ animeId tidak boleh kosong!');
 
-      setIsLoading(true); // Set loading sebelum fetch data
+      setIsLoading(true); // Mulai loading
 
-      const detailAnime = await fetchAnimeDetail(animeId, source);
-      setDetailAnime(detailAnime?.data || []);
-      console.log("data anime detail : ", detailAnime.data);
-      
+      const detailAnimeRes = await fetchAnimeDetail(animeId, source);
+      const animeData = detailAnimeRes?.data || {};
 
-      // Cek apakah anime sudah ada di favorit
-      // ✅ Cek favorit dari Firestore
+      setDetailAnime(animeData);
+
+      const episode = animeData?.episodeList?.find(ep => ep.title === 1);
+      setEpisodeOne(episode);
+
+      console.log("✅ Data anime eps 1 : ", episode);
+
+      // Cek favorit dari Firestore
       if (auth.currentUser) {
         const favRef = doc(db, "users", auth.currentUser.uid, "favorites", animeId);
         const favSnap = await getDoc(favRef);
         setIsFavorite(favSnap.exists());
       }
-            
 
-      // Ambil warna dominan setelah data anime tersedia
-      if (detailAnime?.data?.poster) {
-        const color = await getDominantColor(detailAnime.data.poster);
+      // Ambil warna dominan dari poster
+      if (animeData?.poster) {
+        const color = await getDominantColor(animeData.poster);
         setColorImage(color);
       }
     } catch (error) {
       console.error('❌ Error fetching anime:', error);
-    } finally {
-      setIsLoading(false); // Pastikan loading selesai setelah semuanya selesai
     }
   };
 
+  // Fetch data episode yang ada posternya
+  const getEpsPoster = async () => {
+    try {
+      if (!episodeOne) return;
+
+      const epsWithPosterRes = await fetchEpisode(episodeOne?.episodeId, source);
+      setEpsAnimeWithPoster(epsWithPosterRes?.data || []);
+      console.log("✅ Data eps with poster : ", epsWithPosterRes?.data);
+    } catch (error) {
+      console.error("❌ Error fetching eps with poster:", error);
+    } finally {
+      // 🎯 Baru di sini kita set loading ke false, setelah data eps terisi
+      setIsLoading(false);
+    }
+  };
+
+  // Auto fetch detail anime saat komponen mount
   useEffect(() => {
     FetchAnimeAndColor();
   }, []);
+
+  // Kalau episodeOne berubah dan sudah dapat, fetch data episode with poster
+  useEffect(() => {
+    if (episodeOne) {
+      getEpsPoster(); // setIsLoading(false) ada di akhir fungsi ini
+    }
+  }, [episodeOne]);
+
 
   const toggleSort = () => {
     setIsAscending(prev => !prev);
@@ -95,332 +139,245 @@ const DetailAnimeScreen = ({route}) => {
     isAscending ? a.title - b.title : b.title - a.title,
   );
 
-const toggleFavorite = async () => {
-  try {
-    const user = auth.currentUser;
-    if (!user) {
-      console.warn("🛑 User belum login!");
-      return;
+  const sortedEpisodesWithPoster = [...(EpsAnimeWithPoster?.recommendedEpisodeList || [])].sort((a, b) => {
+    const getEpisodeNumber = (title) => {
+      const match = title.match(/Episode\s+(\d+)/i);
+      return match ? parseInt(match[1], 10) : 0;
+    };
+
+    const epA = getEpisodeNumber(a.title);
+    const epB = getEpisodeNumber(b.title);
+
+    return isAscending ? epA - epB : epB - epA;
+  });
+
+  const toggleFavorite = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        console.warn("🛑 User belum login!");
+        return;
+      }
+
+      const userId = user.uid;
+      const favRef = doc(db, "users", userId, "favorites", animeId);
+
+      if (isFavorite) {
+        // ❌ Hapus dari Firestore
+        await deleteDoc(favRef);
+        console.log("🗑️ Anime dihapus dari favorit");
+      } else {
+        // ✅ Tambahkan ke Firestore
+        const newFavorite = {
+          animeId,
+          title: detailAnime?.title?.trim() ? detailAnime.title : animeTitle,
+          score: detailAnime.score?.value || "",
+          poster: detailAnime.poster,
+          genres: detailAnime.genreList.map((genre) => genre.title),
+        };
+        await setDoc(favRef, newFavorite);
+        console.log("✅ Anime ditambahkan ke favorit");
+      }
+
+      setIsFavorite(!isFavorite);
+    } catch (error) {
+      console.error("❌ Error handling favorite:", error);
     }
-
-    const userId = user.uid;
-    const favRef = doc(db, "users", userId, "favorites", animeId);
-
-    if (isFavorite) {
-      // ❌ Hapus dari Firestore
-      await deleteDoc(favRef);
-      console.log("🗑️ Anime dihapus dari favorit");
-    } else {
-      // ✅ Tambahkan ke Firestore
-      const newFavorite = {
-        animeId,
-        title: detailAnime?.title?.trim() ? detailAnime.title : animeTitle,
-        score: detailAnime.score?.value || "",
-        poster: detailAnime.poster,
-        genres: detailAnime.genreList.map((genre) => genre.title),
-      };
-      await setDoc(favRef, newFavorite);
-      console.log("✅ Anime ditambahkan ke favorit");
-    }
-
-    setIsFavorite(!isFavorite);
-  } catch (error) {
-    console.error("❌ Error handling favorite:", error);
-  }
-};
+  };
 
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: '#000'}}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
       {isLoading ? (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-            <ActivityIndicator size="large" color="#FFD700" />
-          </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#FFD700" />
+        </View>
       ) : (
-        <ImageBackground
-          style={styles.imageBackground}
-          source={{uri: detailAnime?.poster}}>
-          <BlurView style={styles.blur} blurType="dark" blurAmount={8} />
-
-          <ScrollView
-            style={{flex: 1, minHeight: ScreenHeight}}
-            showsVerticalScrollIndicator={false}>
-            {/* Header */}
-            <View style={styles.header}>
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.goBack();
-                }}>
-                <BackIcon size={30} color="#fff" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
-                <StarIcon size={16} />
-                <Text style={styles.favoriteText}>
-                  {isFavorite ? 'Remove From Favorite' : 'Add To Favorite'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Poster & Anime Info */}
-            <View style={styles.centered}>
-              <Image
-                source={{uri: detailAnime?.poster}}
-                style={styles.poster}
-              />
-            </View>
-
-            {/* Wave & Title */}
-            <View style={styles.waveContainer}>
-              <WaveDetailAnimeIcon
-                width={'100%'}
-                height={150}
-                color={colorImage}
-              />
-              <View style={styles.titleContainer}>
-                <Text style={styles.title} numberOfLines={2}>{detailAnime?.title?.trim() ? detailAnime.title : animeTitle}</Text>
-                <Text style={styles.subTitle} numberOfLines={1}>
-                  {detailAnime?.studios} | {detailAnime?.season} |{' '}
-                  {detailAnime?.duration}
-                </Text>
-                <View style={styles.genreTags}>
-                  <Text
-                    style={{
-                      color: 'rgba(255,255,255,1)',
-                      fontSize: 12,
-                      backgroundColor: '#0FD312',
-                      paddingVertical: 3,
-                      fontFamily: 'NotoSans_SemiCondensed-Bold',
-                      textAlign: 'center',
-                      borderRadius: 30,
-                      paddingHorizontal: 20,
-                      marginRight: 10,
-                    }}
-                    numberOfLines={1}>
-                    {detailAnime?.type}
-                  </Text>
-                  <Text
-                    style={{
-                      color: 'rgba(255,255,255,1)',
-                      fontSize: 12,
-                      backgroundColor:
-                        detailAnime?.status === 'Completed'
-                          ? '#00a2ff'
-                          : detailAnime?.status === 'Ongoing'
-                          ? '#ff6d1e'
-                          : 'gray',
-                      paddingVertical: 3,
-                      fontFamily: 'NotoSans_SemiCondensed-Bold',
-                      textAlign: 'center',
-                      borderRadius: 30,
-                      paddingHorizontal: 20,
-                      marginRight: 10,
-                    }}
-                    numberOfLines={1}>
-                    {detailAnime?.status}
-                  </Text>
-                  <Text
-                    style={{
-                      color: 'rgba(255,255,255,1)',
-                      fontSize: 12,
-                      backgroundColor: 'rgba(228,255,0,0.7)',
-                      paddingVertical: 3,
-                      fontFamily: 'NotoSans_SemiCondensed-Bold',
-                      textAlign: 'center',
-                      borderRadius: 30,
-                      paddingHorizontal: 20,
-                    }}
-                    numberOfLines={1}>
-                    ⭐ {detailAnime?.score?.value}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Anime Detail Section */}
-            <LinearGradient
-              colors={[colorImage, darkenColor(colorImage)]}
-              locations={[0.2, 1]}
-              style={styles.detailContainer}>
-              <Text style={styles.detailText}>
-                <Text style={styles.bold}>Title:</Text> {detailAnime?.title?.trim() ? detailAnime.title : animeTitle}
-              </Text>
-              <Text style={styles.detailText}>
-                <Text style={styles.bold}>Status:</Text> {detailAnime?.status}
-              </Text>
-              <Text style={styles.detailText}>
-                <Text style={styles.bold}>Episodes:</Text>{' '}
-                {detailAnime?.episodes}
-              </Text>
-              <Text style={styles.detailText}>
-                <Text style={styles.bold}>Source:</Text> {detailAnime?.source}
-              </Text>
-              <Text style={styles.detailText}>
-                <Text style={styles.bold}>Duration:</Text>{' '}
-                {detailAnime?.duration}
-              </Text>
-              <Text style={styles.detailText}>
-                <Text style={styles.bold}>Genres:</Text>{' '}
-                {detailAnime?.genreList?.map(genre => genre.title).join(', ')}
-              </Text>
-
-              {/* Expandable Detail */}
-              {showMore && (
-                <View>
-                  <Text style={styles.detailText}>
-                    <Text style={styles.bold}>Type:</Text> {detailAnime?.type}
-                  </Text>
-                  <Text style={styles.detailText}>
-                    <Text style={styles.bold}>Aired:</Text> {detailAnime?.aired}
-                  </Text>
-                  <Text style={styles.detailText}>
-                    <Text style={styles.bold}>Season:</Text>{' '}
-                    {detailAnime?.season}
-                  </Text>
-                  <Text style={styles.detailText}>
-                    <Text style={styles.bold}>Producer:</Text>{' '}
-                    {detailAnime?.producers || '-'}
-                  </Text>
-                  <Text style={styles.detailText}>
-                    <Text style={styles.bold}>Studios:</Text>{' '}
-                    {detailAnime?.studios}
-                  </Text>
-                  <Text style={styles.detailText}>
-                    <Text style={styles.bold}>Score:</Text>{' '}
-                    {detailAnime?.score?.value}
-                  </Text>
-                  <Text style={styles.detailText}>
-                    <Text style={styles.bold}>Users:</Text>{' '}
-                    {detailAnime?.score.users}
-                  </Text>
-                  <Text style={styles.detailText}>
-                    <Text style={styles.bold}>English:</Text>{' '}
-                    {detailAnime?.english}
-                  </Text>
-                  <Text style={styles.detailText}>
-                    <Text style={styles.bold}>Japanese:</Text>{' '}
-                    {detailAnime?.japanese}
-                  </Text>
-                  <Text style={styles.detailText}>
-                    <Text style={styles.bold}>Synonyms:</Text>{' '}
-                    {detailAnime?.synonyms}
-                  </Text>
-                </View>
-              )}
-
-              <TouchableOpacity
-                onPress={() => setShowMore(!showMore)}
-                style={styles.moreButton}>
-                <Text style={styles.moreText}>
-                  {showMore ? 'Show Less' : 'Show More'}
-                </Text>
-              </TouchableOpacity>
-            </LinearGradient>
-            <View
-              style={{
-                width: '100%',
-                paddingHorizontal: 20,
-                backgroundColor: darkenColor(colorImage),
-              }}>
-              {detailAnime?.synopsis?.paragraphs?.length > 0 && (
-                <View
-                  style={{
-                    width: '100%',
-                  }}>
-                  {/* Title */}
-                  <Text
-                    style={{
-                      color: '#Fdfdfd',
-                      fontSize: 20,
-                      fontWeight: 'bold',
-                      fontFamily: 'OpenSans_SemiCondensed-Medium',
-                      marginBottom: 10,
-                    }}>
-                    Ringkasan
-                  </Text>
-
-                  {/* Content */}
-                  <View>
-                    <Text
-                      style={{
-                        color: '#EAEAEA',
-                        fontSize: 15,
-                        lineHeight: 26,
-                        fontFamily: 'OpenSans_SemiCondensed-Medium',
-                        textAlign: 'justify',
-                      }}>
-                      {expanded
-                        ? detailAnime?.synopsis?.paragraphs.join('\n\n')
-                        : detailAnime?.synopsis?.paragraphs[0].slice(0, 200) +
-                          '...'}
-                    </Text>
-                    <TouchableOpacity
-                      style={{paddingBottom: 20}}
-                      onPress={() => setExpanded(!expanded)}>
-                      <Text style={styles.moreText}>
-                        {expanded ? 'Show Less' : 'Show More'}
-                      </Text>
-                    </TouchableOpacity>
+        <FlatList
+          data={[]}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingBottom: 50,
+          }}
+          ListHeaderComponent={() => (
+            <>
+              <ImageBackground
+                style={{ width: '100%', height: 330, position: 'relative' }}
+                source={
+                  detailAnime?.poster
+                    ? { uri: detailAnime.poster }
+                    : require('../assets/Images/404ImageNotFound.png')
+                }
+                resizeMode="cover">
+                <BlurView style={[styles.blur, { opacity: 0.7 }]} blurType="dark" blurAmount={10} />
+                <LinearGradient colors={['transparent', 'rgba(0,0,0,1)']} style={styles.gradientBottom} />
+                <HeaderDetailComponent toggleFavorite={toggleFavorite} isFavorite={isFavorite} />
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, position: 'absolute', bottom: 10, left: 0, right: 0 }}>
+                  <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                    <View style={{ position: 'relative', width: 150, height: 200, borderRadius: 10, overflow: 'hidden' }}>
+                      <FastImage
+                        source={imageError || !detailAnime?.poster ? require('../assets/Images/404ImageNotFound.png') : { uri: detailAnime.poster }}
+                        style={{ width: 150, height: 200, borderRadius: 10 }}
+                        resizeMode={FastImage.resizeMode.cover}
+                        onError={() => setImageError(true)}
+                      />
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 10, position: 'absolute', top: -6, left: 4, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', maxWidth: 100, paddingRight: 5 }}>
+                          <View style={{ paddingBottom: 3 }}><StarIcon color="#f0d508ff" size={12} /></View>
+                          <Text style={{ fontFamily: 'Poppins-Medium', color: 'rgba(255,255,255,0.8)', fontSize: 12, paddingLeft: 3 }} numberOfLines={1} ellipsizeMode="tail">{detailAnime?.score?.value || 'N/A'}</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                  <View style={{ flex: 1, marginLeft: 20 }}>
+                    <Text style={{ color: 'rgb(255,255,255)', fontSize: 22, fontFamily: 'Poppins-Bold' }} numberOfLines={3} ellipsizeMode="tail">{detailAnime?.title?.trim() ? detailAnime.title : animeTitle}</Text>
+                    <Text style={{ fontFamily: 'Poppins-Medium', color: 'rgba(255,255,255,0.8)', fontSize: 14, marginTop: 5 }} numberOfLines={1}>{detailAnime?.japanese || detailAnime?.studios || detailAnime?.producers || detailAnime?.aired || 'Unknown'}</Text>
+                    <Text style={{ fontFamily: 'Poppins-Medium', color: 'rgba(255,255,255,0.8)', fontSize: 14, marginTop: 10 }} numberOfLines={1}>{detailAnime?.duration || 'Unknown'} • {detailAnime?.season || 'Unknown'}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', maxWidth: 100, paddingRight: 5 }}>
+                        <TvIcon color="#37F008" size={18} />
+                        <Text style={{ fontFamily: 'Poppins-Medium', color: 'rgba(255,255,255,0.8)', fontSize: 14, paddingLeft: 5 }} numberOfLines={1} ellipsizeMode="tail">{detailAnime?.type || 'Unknown'}</Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 10, maxWidth: 100 }}>
+                        <FlagStatusIcon color="rgba(255, 225, 0, 1)" size={20} />
+                        <Text style={{ fontFamily: 'Poppins-Medium', color: 'rgba(255,255,255,0.8)', fontSize: 14, paddingLeft: 5 }} numberOfLines={1} ellipsizeMode="tail">{detailAnime?.status || 'Unknown'}</Text>
+                      </View>
+                    </View>
+                    <Text style={{ fontFamily: 'Poppins-Medium', color: 'rgba(255,255,255,0.8)', fontSize: 14, marginTop: 10 }} numberOfLines={2}>Genre : {detailAnime?.genreList?.map(genre => genre.title).join(', ') || detailAnime?.synopsis?.paragraphs.join('\n\n') || 'Unknown'}</Text>
                   </View>
                 </View>
-              )}
-            </View>
-            {detailAnime?.batchList?.length > 0 && (
-              <View
-              style={{
-                width: '100%',
-                paddingHorizontal: 20,
-                backgroundColor: darkenColor(colorImage),
-              }}>
-                <BatchDownloadSection batchList={detailAnime.batchList} colorImage={colorImage} />
-              </View>
-            )}
-            <View
-              style={{
-                width: '100%',
-                paddingHorizontal: 20,
-                backgroundColor: darkenColor(colorImage),
-                paddingBottom: 80,
-              }}>
-              {/* Header Episode */}
-              <View
-                style={{
-                  flexDirection: 'row',
-                  width: '100%',
-                  paddingVertical: 20,
-                  justifyContent: 'space-between',
-                }}>
-                <Text
-                  style={{
-                    color: '#Fdfdfd',
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    fontFamily: 'OpenSans_SemiCondensed-Medium',
-                    marginBottom: 10,
-                  }}>
-                  Episode ({detailAnime?.episodes})
-                </Text>
-                <TouchableOpacity onPress={toggleSort}>
-                  <SortirIcon size={26} color="#fdfdfd" />
+              </ImageBackground>
+
+              <View style={{ paddingHorizontal: 20, paddingVertical: 10, backgroundColor: '#000' }}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('WatchAnime', { episodeId: episodeOne?.episodeId })}
+                  style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', backgroundColor: autoAdjustColor(colorImage.background), paddingHorizontal: 16, paddingVertical: 12, borderRadius: 10, width: '100%', marginBottom: 12, borderWidth: 0.5 }}>
+                  <PlayIcon color={colorImage.text} size={20} />
+                  <Text style={{ marginLeft: 10, color: colorImage.text, fontFamily: 'Poppins-Bold', fontSize: 14 }}>Play Eps 1</Text>
                 </TouchableOpacity>
+                <BatchDownloadSection batchList={detailAnime?.batchList} colorImage={colorImage.background} />
               </View>
-              <VirtualizedList
-                data={sortedEpisodes}
-                nestedScrollEnabled={true}
-                scrollEnabled={false}
-                initialNumToRender={10} // Render awal cuma 10 item biar gak lag
-                renderItem={({item}) => (
-                  <EpisodeCard
-                    episodeNumber={item.title}
-                    onPress={() => navigation.navigate('WatchAnime', { episodeId: item.episodeId })}
+
+              {/* Tab Header */}
+              <View style={{ flexDirection: 'row', backgroundColor: '#000' }}>
+                {tabTitles.map((title, index) => {
+                  const isActive = index === activeTab;
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => setActiveTab(index)}
+                      style={{ flex: 1, paddingVertical: 12, borderBottomWidth: 2, borderBottomColor: isActive ? autoAdjustColor(colorImage.background) : 'transparent' }}>
+                      <Text style={{ textAlign: 'center', fontFamily: 'Poppins-Medium', fontSize: 14, color: isActive ? '#fff' : '#888' }}>{title}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {/* Tab Content */}
+              {activeTab === 1 && (
+                <View style={{ padding: 16 }}>
+                  <AnimeDetailCard detailAnime={detailAnime} animeTitle={animeTitle} />
+                </View>
+              )}
+              {activeTab === 2 && (
+                <View style={{ padding: 16 }}>
+                  <Text style={{ color: 'white', fontFamily: 'Poppins-Medium', fontSize: 16 }}>Sinopsis</Text>
+                  {detailAnime?.synopsis?.paragraphs?.length > 0 ? (
+                    detailAnime.synopsis.paragraphs.map((para, i) => (
+                      <Text key={i} style={{ color: '#ccc', marginTop: 8, lineHeight: 20, fontFamily: 'Poppins-Regular', textAlign: 'justify' }}>{para}</Text>
+                    ))
+                  ) : (
+                    <Text style={{ color: '#888', marginTop: 10 }}>Sinopsis belum tersedia</Text>
+                  )}
+                </View>
+              )}
+            </>
+          )}
+          ListFooterComponent={() => (
+            activeTab === 0 && (
+              <>
+                <View style={{ paddingHorizontal: 15, paddingTop: 5, paddingBottom: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ color: '#fff', fontFamily: 'Poppins-Medium', fontSize: 14 }}>
+                    Daftar Episode ({detailAnime?.episodeList?.length || ''})
+                  </Text>
+                  <TouchableOpacity
+                    onPress={toggleSort}
+                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
+                    <Text style={{ marginRight: 8, color: '#fff', fontFamily: 'Poppins-Medium', fontSize: 14 }}>Sortir Eps</Text>
+                    <SortirIcon size={20} color={'#fff'} />
+                  </TouchableOpacity>
+                </View>
+                {(EpsAnimeWithPoster?.recommendedEpisodeList?.length > 0 && detailAnime?.episodeList?.length <= 50 ? (
+                  <FlatList
+                    data={sortedEpisodesWithPoster}
+                    keyExtractor={(item, index) => `${item.title}-${index}`}
+                    renderItem={({ item }) => (
+                      <EpisodeCardWithPoster
+                        poster={item.poster}
+                        title={item.title}
+                        releaseDate={item.releaseDate}
+                        onPress={() => {
+                          const parts = item.href.split('/');
+                          const episodeId = parts[parts.length - 1];
+                          navigation.navigate('WatchAnime', { episodeId });
+                        }}
+                      />
+                    )}
                   />
-                )}
-                keyExtractor={item => item.episodeId}
-                getItemCount={data => data.length}
-                getItem={(data, index) => data[index]}
-              />
-            </View>
-          </ScrollView>
-        </ImageBackground>
+                ) : (
+                  <>
+                    {detailAnime?.episodeList?.length >= 200 ? (
+                      <>
+                        <FlatList
+                          data={sortedEpisodes}
+                          keyExtractor={(item, index) => `${item.episodeId}-${index}`}
+                          numColumns={6} // ⬅️ Ini bikin grid 3 kolom
+                          removeClippedSubviews={true} // Buat optimalisasi performance
+                          initialNumToRender={30}
+                          maxToRenderPerBatch={30}
+                          windowSize={10}
+                          renderItem={({ item }) => (
+                            <TouchableOpacity
+                              style={{
+                                flex: 1,
+                                margin: 5,
+                                height: 40,
+                                backgroundColor: '#222',
+                                borderRadius: 10,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                              onPress={() => navigation.navigate('WatchAnime', { episodeId: item.episodeId })}
+                            >
+                              <Text style={{ color: 'white', fontSize: 12, fontFamily: 'Poppins-Medium' }}>{item.title}</Text>
+                            </TouchableOpacity>
+                          )}
+                          contentContainerStyle={{ padding: 10 }}
+                        />
+                      </>
+                      ) : (
+                      <FlatList
+                        data={sortedEpisodes}
+                        keyExtractor={(item, index) => `${item.episodeId}-${index}`}
+                        renderItem={({ item }) => (
+                          <EpisodeCard
+                            episodeNumber={item.title}
+                            colorImage={autoAdjustColor(colorImage.background)}
+                            onPress={() => navigation.navigate('WatchAnime', { episodeId: item.episodeId })}
+                          />
+                        )}
+                        initialNumToRender={10}
+                        maxToRenderPerBatch={10}
+                        windowSize={5}
+                        removeClippedSubviews={true}
+                      />
+                    )}
+                  </>
+                ))}
+              </>
+            )
+          )}
+        />
       )}
     </SafeAreaView>
   );
@@ -429,96 +386,14 @@ const toggleFavorite = async () => {
 export default DetailAnimeScreen;
 
 const styles = StyleSheet.create({
-  imageBackground: {
-    height: '80%',
-    width: '100%',
-  },
   blur: {
     ...StyleSheet.absoluteFillObject,
   },
-  header: {
-    height: 70,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  favoriteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1B1C16',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 30,
-  },
-  favoriteText: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 12,
-    paddingLeft: 5,
-    fontFamily: 'OpenSans_SemiCondensed-Bold',
-  },
-  centered: {
-    alignItems: 'center',
-    paddingTop: 20,
-  },
-  poster: {
-    height: 270,
-    width: 180,
-    borderRadius: 10,
-  },
-  waveContainer: {
-    width: '100%',
-    height: 140,
-    position: 'relative',
-  },
-  titleContainer: {
+  gradientBottom: {
     position: 'absolute',
-    width: '100%',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-  },
-  title: {
-    color: '#fff',
-    fontSize: 24,
-    textAlign: 'center',
-    fontFamily: 'OpenSans_SemiCondensed-Bold',
-  },
-  subTitle: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 5,
-    fontFamily: 'OpenSans_Condensed-SemiBold',
-  },
-  genreTags: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 10,
-  },
-  detailContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    backgroundColor: '#28002C',
-  },
-  detailText: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 16,
-    marginBottom: 5,
-    fontFamily: 'OpenSans_SemiCondensed-Medium',
-  },
-  bold: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontFamily: 'OpenSans_SemiCondensed-Bold',
-  },
-  moreButton: {
-    marginTop: 10,
-    alignSelf: 'center',
-  },
-  moreText: {
-    color: '#00a2ff',
-    fontSize: 14,
-    fontWeight: 'bold',
-    fontFamily: 'OpenSans_Condensed-SemiBold',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 330 * 0.3, // 30% dari tinggi ImageBackground
   },
 });

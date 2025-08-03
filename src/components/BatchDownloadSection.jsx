@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Modal, ActivityIndicator, ScrollView, Sty
 import { darkenColor } from "../utils/ImageColorModule";
 import { fetchBatchDetail } from "../utils/api/service";
 import { useSelector } from "react-redux";
+import DownloadIcon from "../assets/Icons/DetailAnimeIcon/DownloadIcon";
 
 const BatchDownloadSection = ({ batchList, colorImage }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -38,23 +39,34 @@ const BatchDownloadSection = ({ batchList, colorImage }) => {
   };
 
   return (
-    <View style={{...styles.container, backgroundColor: darkenColor(colorImage, 0.6),}}>
-      <Text style={styles.title}>Download Batch</Text>
-
-      {/* Mapping daftar batch */}
-      {batchList?.length > 0 ? (
-        batchList.map((batch, index) => (
-          <TouchableOpacity
-            key={index}
-            onPress={() => openModal(batch)}
-            style={{...styles.batchButton, backgroundColor: darkenColor(colorImage, 0.3),}}
-          >
-            <Text style={styles.batchButtonText}>{batch.title}</Text>
-          </TouchableOpacity>
-        ))
-      ) : (
-        <Text style={styles.noBatchText}>Tidak ada batch tersedia.</Text>
-      )}
+    <View>
+      <TouchableOpacity
+  onPress={() =>
+    batchList?.length > 0
+      ? openModal(batchList[0]) // kalau ada, buka batch pertama (atau bisa pilih batch lain)
+      : setError("Mohon maaf 🙏 Batch download untuk anime ini belum tersedia saat ini. Silakan tunggu pembaruan selanjutnya ya. Terima kasih atas pengertiannya") || setModalVisible(true)
+  }
+  style={{
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#444',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 10,
+    width: '100%',
+  }}>
+  <DownloadIcon color={'#fff'} size={20} />
+  <Text
+    style={{
+      marginLeft: 10,
+      color: '#fff',
+      fontFamily: 'Poppins-Medium',
+      fontSize: 14,
+    }}>
+    Download Batch
+  </Text>
+</TouchableOpacity>
 
       {/* Modal untuk menampilkan informasi batch */}
       <Modal

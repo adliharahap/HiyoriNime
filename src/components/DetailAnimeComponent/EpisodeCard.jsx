@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, Animated, Platform, StyleSheet } from 'react-native';
 
-const EpisodeCard = ({ episodeNumber, onPress }) => {
+const EpisodeCard = ({ episodeNumber, onPress,  colorImage}) => {
   const [scale] = useState(new Animated.Value(1));
 
   const handlePressIn = () => {
@@ -31,7 +31,7 @@ const EpisodeCard = ({ episodeNumber, onPress }) => {
         styles.container,
         Platform.OS === 'ios' && pressed ? styles.pressed : null,
       ]}>
-      <Animated.View style={[styles.inner, { transform: [{ scale }] }]}>
+      <Animated.View style={[styles.inner, { transform: [{ scale }] , backgroundColor: colorImage,}]}>
         <Text style={styles.text}>Episode {episodeNumber}</Text>
       </Animated.View>
     </Pressable>
@@ -44,10 +44,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
     marginBottom: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
   },
   inner: {
     height: 50,
-    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },

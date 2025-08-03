@@ -29,7 +29,10 @@ const WatchAnimeScreen = ({route}) => {
   const [data, setData] = useState([]); // State untuk menyimpan data
   const [loading, setLoading] = useState(true); // State untuk loading
   const [expanded, setExpanded] = useState(false);
-  const [colorImage, setColorImage] = useState('#1b1b1b');
+  const [colorImage, setColorImage] = useState({
+      background: '#1b1b1b',
+      text: '#ffffff',
+    });
   const [videoUrl, setVideoUrl] = useState(null);
   const [isMp4, setIsMp4] = useState(false);
   const {episodeId} = route.params;
@@ -133,7 +136,7 @@ const WatchAnimeScreen = ({route}) => {
             )}
           </View>
           <LinearGradient
-            colors={[colorImage, darkenColor(colorImage, 0.7)]}
+            colors={[colorImage.background, darkenColor(colorImage.background, 0.7)]}
             style={{flex: 1}}>
             <View
               style={{
