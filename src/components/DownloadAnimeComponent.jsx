@@ -1,7 +1,8 @@
 import React, { useState } from "react"; 
 import { View, Text, Pressable, FlatList, Modal, TouchableOpacity, Linking, StyleSheet } from "react-native";
+import { autoAdjustColor } from "../utils/ImageColorModule";
 
-const DownloadAnimeComponent = ({ animeData }) => {
+const DownloadAnimeComponent = ({ animeData, colorImage }) => {
   const [selectedFormat, setSelectedFormat] = useState(null);
   const [selectedQuality, setSelectedQuality] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -10,12 +11,12 @@ const DownloadAnimeComponent = ({ animeData }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Download Anime</Text>
       {animeData?.formats?.map((format, index) => (
-        <Pressable key={index} style={styles.button} onPress={() => {
+        <Pressable key={index} style={[styles.button, { backgroundColor: autoAdjustColor(colorImage.background) }]} onPress={() => {
           setSelectedFormat(format);
           setSelectedQuality(null); // Reset kualitas saat format berubah
           setModalVisible(true);
         }}>
-          <Text style={styles.buttonText}>{format.title}</Text>
+          <Text style={[styles.buttonText, { color: colorImage.text }]}>{format.title}</Text>
         </Pressable>
       ))}
       
@@ -65,7 +66,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1E293B",
-    padding: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
     borderRadius: 15,
   },
   title: {
@@ -76,7 +78,6 @@ const styles = StyleSheet.create({
     fontFamily: 'OpenSans_SemiCondensed-Bold',
   },
   button: {
-    backgroundColor: "#FFD700",
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,

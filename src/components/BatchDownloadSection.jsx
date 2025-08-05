@@ -22,7 +22,7 @@ const BatchDownloadSection = ({ batchList, colorImage }) => {
 
     try {
       console.log("batch : ", batch);
-      
+
       const response = await fetchBatchDetail(batch.batchId, source);
 
       if (response.data?.downloadUrl?.formats) {
@@ -41,32 +41,32 @@ const BatchDownloadSection = ({ batchList, colorImage }) => {
   return (
     <View>
       <TouchableOpacity
-  onPress={() =>
-    batchList?.length > 0
-      ? openModal(batchList[0]) // kalau ada, buka batch pertama (atau bisa pilih batch lain)
-      : setError("Mohon maaf 🙏 Batch download untuk anime ini belum tersedia saat ini. Silakan tunggu pembaruan selanjutnya ya. Terima kasih atas pengertiannya") || setModalVisible(true)
-  }
-  style={{
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#444',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 10,
-    width: '100%',
-  }}>
-  <DownloadIcon color={'#fff'} size={20} />
-  <Text
-    style={{
-      marginLeft: 10,
-      color: '#fff',
-      fontFamily: 'Poppins-Medium',
-      fontSize: 14,
-    }}>
-    Download Batch
-  </Text>
-</TouchableOpacity>
+        onPress={() =>
+          batchList?.length > 0
+            ? openModal(batchList[0]) // kalau ada, buka batch pertama (atau bisa pilih batch lain)
+            : setError("Mohon maaf 🙏 Batch download untuk anime ini belum tersedia saat ini. Silakan tunggu pembaruan selanjutnya ya. Terima kasih atas pengertiannya") || setModalVisible(true)
+        }
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#444',
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderRadius: 10,
+          width: '100%',
+        }}>
+        <DownloadIcon color={'#fff'} size={20} />
+        <Text
+          style={{
+            marginLeft: 10,
+            color: '#fff',
+            fontFamily: 'Poppins-Medium',
+            fontSize: 14,
+          }}>
+          Download Batch
+        </Text>
+      </TouchableOpacity>
 
       {/* Modal untuk menampilkan informasi batch */}
       <Modal
@@ -98,7 +98,7 @@ const BatchDownloadSection = ({ batchList, colorImage }) => {
                           <TouchableOpacity
                             key={lIdx}
                             onPress={() => Linking.openURL(link.url)} // Open URL in browser
-                            style={{...styles.downloadButton, backgroundColor: darkenColor(colorImage, 0.6)}}
+                            style={{ ...styles.downloadButton, backgroundColor: darkenColor(colorImage, 0.6) }}
                           >
                             <Text style={styles.downloadButtonText}>{link.title}</Text>
                           </TouchableOpacity>
@@ -113,7 +113,7 @@ const BatchDownloadSection = ({ batchList, colorImage }) => {
             {/* Tombol Tutup Modal */}
             <TouchableOpacity
               onPress={() => setModalVisible(false)}
-              style={{...styles.closeButton, backgroundColor: darkenColor(colorImage, 0.6),}}
+              style={{ ...styles.closeButton, backgroundColor: darkenColor(colorImage, 0.6), }}
             >
               <Text style={styles.closeButtonText}>Tutup</Text>
             </TouchableOpacity>

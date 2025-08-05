@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Pressable, FlatList, Modal } from "react-native";
+import { View, Text, Pressable, FlatList, Modal, TouchableOpacity } from "react-native";
 import { fetchServer } from "../utils/api/service";
 import { useSelector } from "react-redux";
+import DownloadIcon from "../assets/Icons/DetailAnimeIcon/DownloadIcon";
+import ServerIcon from "../assets/Icons/serverIcon";
 
 const ServerSelector = ({ serverData, setVideoUrl }) => {
   const [selectedQuality, setSelectedQuality] = useState(null);
@@ -17,7 +19,7 @@ const ServerSelector = ({ serverData, setVideoUrl }) => {
   const handleSelectServer = async (server) => {
     setSelectedServer(server);
     setModalVisible(false);
-  
+
     try {
       const response = await fetchServer(server.serverId, source);
       if (response?.data?.url) {  // Ganti streamingUrl ke url sesuai API
@@ -33,32 +35,31 @@ const ServerSelector = ({ serverData, setVideoUrl }) => {
       setErrorModalVisible(true);
     }
   };
-  
+
 
   return (
-    <View style={{ width: "100%", padding: 20, backgroundColor: "#1E293B", borderRadius: 10 }}>
-      <Text style={{ color: "#FACC15", fontSize: 16, fontWeight: "bold", marginBottom: 10 }}>
-        {selectedServer ? selectedServer.title : "Default Server"}
-      </Text>
-
-      <Pressable
-        onPress={() => setModalVisible(true)}
-        style={{
-          width: "100%",
-          paddingVertical: 12,
+    <TouchableOpacity 
+      style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#444',
           paddingHorizontal: 16,
-          backgroundColor: "#334155",
-          borderRadius: 8,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ color: "white", fontSize: 16 }}>
-          {selectedQuality ? selectedQuality.title : "Pilih Kualitas"}
+          paddingVertical: 12,
+          borderRadius: 10,
+          width: '100%',
+     }}
+    onPress={() => setModalVisible(true)}>
+        <ServerIcon color={'#fff'} size={20} />
+        <Text
+          style={{
+            marginLeft: 10,
+            color: '#fff',
+            fontFamily: 'Poppins-Medium',
+            fontSize: 15,
+          }}>
+          Pilih Server ({selectedServer ? selectedServer.title : "Default Server"})
         </Text>
-        <Text style={{ color: "white", fontSize: 18 }}>▼</Text>
-      </Pressable>
 
       <Modal visible={modalVisible} transparent animationType="fade">
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.6)" }}>
@@ -147,7 +148,7 @@ const ServerSelector = ({ serverData, setVideoUrl }) => {
           </View>
         </View>
       </Modal>
-    </View>
+    </TouchableOpacity>
   );
 };
 

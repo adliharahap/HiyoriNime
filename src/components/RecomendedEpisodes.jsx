@@ -7,8 +7,8 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  Linking,
 } from "react-native";
+import LinearGradient from "react-native-linear-gradient"; // ✨ import gradient
 
 const RecommendedEpisodes = ({ episodes }) => {
   const navigation = useNavigation();
@@ -23,6 +23,7 @@ const RecommendedEpisodes = ({ episodes }) => {
         showsHorizontalScrollIndicator={false}
         renderItem={({ item }) => (
           <TouchableOpacity 
+            activeOpacity={0.7}
             style={styles.card}
             onPress={() => {
               const episodeId = item.href.replace("/samehadaku/episode/", "");
@@ -30,10 +31,15 @@ const RecommendedEpisodes = ({ episodes }) => {
             }}
           >
             <Image source={{ uri: item.poster }} style={styles.poster} />
-            <View style={styles.overlay}>
-              <Text style={styles.episodeTitle}>{item.title}</Text>
-              <Text style={styles.releaseDate}>{item.releaseDate}</Text>
-            </View>
+            
+            {/* ✨ Gradient overlay */}
+            <LinearGradient
+              colors={["transparent", "rgba(0,0,0,0.8)"]}
+              style={styles.gradientOverlay}
+            >
+              <Text numberOfLines={2} style={styles.episodeTitle}>{item.title}</Text>
+              <Text numberOfLines={1} style={styles.releaseDate}>{item.releaseDate}</Text>
+            </LinearGradient>
           </TouchableOpacity>
         )}
       />
@@ -43,14 +49,14 @@ const RecommendedEpisodes = ({ episodes }) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 10,
+    paddingBottom: 5,
   },
   title: {
     color: "#Fdfdfd",
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 14,
   },
   card: {
     marginRight: 15,
@@ -59,16 +65,18 @@ const styles = StyleSheet.create({
   },
   poster: {
     width: 200,
-    height: 120,
+    aspectRatio: 16 / 9,
     borderRadius: 10,
   },
-  overlay: {
+  gradientOverlay: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    padding: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    justifyContent: "flex-end",
+    height: 70,
   },
   episodeTitle: {
     color: "#fff",
@@ -76,7 +84,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   releaseDate: {
-    color: "#ccc",
+    color: "#ddd",
     fontSize: 12,
   },
 });

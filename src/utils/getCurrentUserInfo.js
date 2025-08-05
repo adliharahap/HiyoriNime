@@ -1,6 +1,7 @@
 // utils/getCurrentUserInfo.js
 
-import { auth } from "../../firebase/firebaseConfig";
+import { auth, db } from "../../firebase/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
 
 const getCurrentUserInfo = async () => {
@@ -20,23 +21,20 @@ const getCurrentUserInfo = async () => {
 
   // 🌟 Default values
   const defaultName = email?.split("@")[0] || "User";
-  const defaultPhoto = "https://i.pinimg.com/736x/72/55/d5/7255d538cacadc975b299f17e2bcd10b.jpg"; // Avatar random based on name
+  const defaultPhoto = "https://i.pinimg.com/736x/72/55/d5/7255d538cacadc975b299f17e2bcd10b.jpg";
 
   let updated = false;
 
-  // ✨ Auto-set name if empty
   if (!displayName && email) {
     displayName = defaultName;
     updated = true;
   }
 
-  // ✨ Auto-set photo if empty
   if (!photoURL) {
     photoURL = defaultPhoto;
     updated = true;
   }
 
-  // 💾 Simpan ke Firebase jika ada perubahan
   if (updated) {
     try {
       await updateProfile(user, {
@@ -49,23 +47,33 @@ const getCurrentUserInfo = async () => {
     }
   }
 
-  return {
+  // 🔥 Fetch Firestore data
+  let firestoreData = {};
+  try {
+    const userDocRef = doc(db, "users", uid);
+    const docSnap = await getDoc(userDocRef);
+    if (docSnap.exists()) {
+      firestoreData = docSnap.data();
+      console.log("📦 Data dari Firestore:", firestoreData);
+    } else {
+      console.log("🚫 Data user tidak ditemukan di Firestore");
+    }
+  } catch (err) {
+    console.error("❌ Gagal fetch data Firestore:", err);
+  }
+
+  // 🧩 Merge semua data
+  const mergedUserData = {
+    uid,
     name: displayName,
     email,
     phone: phoneNumber,
     photo: photoURL,
     provider,
-    uid,
+    ...firestoreData, // 🔁 Overwrite atau tambahkan field baru dari Firestore
   };
+
+  return mergedUserData;
 };
-
-    // cara pakai 
-    // const userInfo = getCurrentUserInfo();
-
-    // if (userInfo) {
-    // console.log('🔗 Provider:', userInfo);
-    // } else {
-    // console.log('🚫 Belum ada user login');
-    // }
 
 export default getCurrentUserInfo;

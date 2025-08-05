@@ -3,25 +3,18 @@ import {
   View,
   ImageBackground,
   StyleSheet,
-  ScrollView,
   Text,
-  Image,
   TouchableOpacity,
   Dimensions,
   FlatList,
   ActivityIndicator,
-  VirtualizedList,
-  Button,
   Animated,
-  PanResponder,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from '@react-native-community/blur';
-import BackIcon from '../assets/Icons/BackIcon';
 import StarIcon from '../assets/Icons/StarIcon';
-import WaveDetailAnimeIcon from '../assets/Icons/WaveDetailAnimeIcon';
 import EpisodeCard from '../components/DetailAnimeComponent/EpisodeCard';
-import { autoAdjustColor, autoLightenIfDark, darkenColor, getDominantColor } from '../utils/ImageColorModule';
+import { autoAdjustColor, getDominantColor } from '../utils/ImageColorModule';
 import LinearGradient from 'react-native-linear-gradient';
 import SortirIcon from '../assets/Icons/SortirIcon';
 import { fetchAnimeDetail, fetchEpisode } from '../utils/api/service';
@@ -34,7 +27,6 @@ import HeaderDetailComponent from '../components/DetailAnimeComponent/HeaderDeta
 import FlagStatusIcon from '../assets/Icons/DetailAnimeIcon/FlagStatusIcon';
 import TvIcon from '../assets/Icons/DetailAnimeIcon/TvIcon';
 import PlayIcon from '../assets/Icons/DetailAnimeIcon/PlayIcon';
-import DownloadIcon from '../assets/Icons/DetailAnimeIcon/DownloadIcon';
 import FastImage from '@d11/react-native-fast-image';
 import EpisodeCardWithPoster from '../components/DetailAnimeComponent/EpisodeCardWithPoster';
 import AnimeDetailCard from '../components/DetailAnimeComponent/AnimeDetailCard';
@@ -281,10 +273,10 @@ const DetailAnimeScreen = ({ route }) => {
               )}
               {activeTab === 2 && (
                 <View style={{ padding: 16 }}>
-                  <Text style={{ color: 'white', fontFamily: 'Poppins-Medium', fontSize: 16 }}>Sinopsis</Text>
+                  <Text style={{ color: 'white', fontFamily: 'Poppins-Medium', fontSize: 15 }}>Sinopsis</Text>
                   {detailAnime?.synopsis?.paragraphs?.length > 0 ? (
                     detailAnime.synopsis.paragraphs.map((para, i) => (
-                      <Text key={i} style={{ color: '#ccc', marginTop: 8, lineHeight: 20, fontFamily: 'Poppins-Regular', textAlign: 'justify' }}>{para}</Text>
+                      <Text key={i} style={{ color: '#ccc', marginTop: 8, lineHeight: 20, fontFamily: 'Poppins-Medium', textAlign: 'justify' }}>{para}</Text>
                     ))
                   ) : (
                     <Text style={{ color: '#888', marginTop: 10 }}>Sinopsis belum tersedia</Text>

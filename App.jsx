@@ -54,7 +54,7 @@ const App = () => {
             animationDuration: 1000,
           }} />
           <Stack.Screen name="OnboardingScreen" component={OnboardingScreen} />
-          <Stack.Screen name="MainScreen" component={MainScreen} />
+          <Stack.Screen name="MainScreen" component={MainScreen} options={{ orientation: 'portrait' }} />
           <Stack.Screen name="Notification" component={NotificationScreen} />
           <Stack.Screen name="ListAllAnime" component={ListAllAnime} />
           <Stack.Screen name="ListAnimeRecent" component={ListRecentAnimeScreen} />

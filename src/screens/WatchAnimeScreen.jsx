@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -11,31 +11,32 @@ import {
   BackHandler,
   ActivityIndicator,
 } from 'react-native';
-import {WebView} from 'react-native-webview';
+import { WebView } from 'react-native-webview';
 import Video from 'react-native-video';
-import {useKeepAwake} from '@sayem314/react-native-keep-awake';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { useKeepAwake } from '@sayem314/react-native-keep-awake';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import ServerSelector from '../components/ServerSelector';
 import DownloadAnimeComponent from '../components/DownloadAnimeComponent';
 import RecommendedEpisodes from '../components/RecomendedEpisodes';
 import LinearGradient from 'react-native-linear-gradient';
-import {fetchEpisode} from '../utils/api/service';
-import {darkenColor, getDominantColor} from '../utils/ImageColorModule';
-import {useNavigation} from '@react-navigation/native';
+import { fetchEpisode } from '../utils/api/service';
+import { autoAdjustColor, darkenColor, getDominantColor } from '../utils/ImageColorModule';
+import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
+import FastImage from '@d11/react-native-fast-image';
 
-const WatchAnimeScreen = ({route}) => {
+const WatchAnimeScreen = ({ route }) => {
   useKeepAwake();
   const [data, setData] = useState([]); // State untuk menyimpan data
   const [loading, setLoading] = useState(true); // State untuk loading
   const [expanded, setExpanded] = useState(false);
   const [colorImage, setColorImage] = useState({
-      background: '#1b1b1b',
-      text: '#ffffff',
-    });
+    background: '#1b1b1b',
+    text: '#ffffff',
+  });
   const [videoUrl, setVideoUrl] = useState(null);
   const [isMp4, setIsMp4] = useState(false);
-  const {episodeId} = route.params;
+  const { episodeId } = route.params;
   const navigation = useNavigation();
   const source = useSelector((state) => state.animeSource.source);
 
@@ -73,13 +74,13 @@ const WatchAnimeScreen = ({route}) => {
   }, []);
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: '#000'}}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
       {loading ? (
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#FFD700" />
         </View>
       ) : (
-        <ScrollView style={{flex: 1}} showsVerticalScrollIndicator={false}>
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
           <View
             style={{
               height: 350,
@@ -90,14 +91,14 @@ const WatchAnimeScreen = ({route}) => {
             {videoUrl ? (
               isMp4 ? (
                 <Video
-                  source={{uri: videoUrl}}
-                  style={{width: '100%', height: '100%'}}
+                  source={{ uri: videoUrl }}
+                  style={{ width: '100%', height: '100%' }}
                   controls={true}
                   resizeMode="contain"
                 />
               ) : (
                 <WebView
-                  source={{uri: videoUrl}}
+                  source={{ uri: videoUrl }}
                   allowsFullscreenVideo={true}
                   javaScriptEnabled={true}
                   allowsInlineMediaPlayback={true}
@@ -107,7 +108,7 @@ const WatchAnimeScreen = ({route}) => {
                   mixedContentMode="always"
                   mediaPlaybackRequiresUserAction={false}
                   onError={syntheticEvent => {
-                    const {nativeEvent} = syntheticEvent;
+                    const { nativeEvent } = syntheticEvent;
                     console.warn('WebView error: ', nativeEvent);
                   }}
                   renderError={() => (
@@ -117,7 +118,7 @@ const WatchAnimeScreen = ({route}) => {
                         justifyContent: 'center',
                         alignItems: 'center',
                       }}>
-                      <Text style={{color: '#fff'}}>❌ Gagal memuat video</Text>
+                      <Text style={{ color: '#fff' }}>❌ Gagal memuat video</Text>
                     </View>
                   )}
                 />
@@ -129,15 +130,17 @@ const WatchAnimeScreen = ({route}) => {
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}>
-                <Text style={{color: '#fff'}}>
+                <Text style={{ color: '#fff' }}>
                   ⚠️ Video tidak tersedia atau sedang error
                 </Text>
               </View>
             )}
           </View>
           <LinearGradient
-            colors={[colorImage.background, darkenColor(colorImage.background, 0.7)]}
-            style={{flex: 1}}>
+            colors={[autoAdjustColor(colorImage.background), '#000000ff']} // kamu bisa ganti warna pertama sesuai keinginan
+            style={{ flex: 1 }}
+            locations={[0, 0.15]} // 15% gradasi atas, sisanya hitam
+          >
             <View
               style={{
                 width: '100%',
@@ -145,17 +148,33 @@ const WatchAnimeScreen = ({route}) => {
                 flexDirection: 'row',
                 overflow: 'hidden',
               }}>
-              <Image
+              <FastImage
                 style={{
                   height: 100,
                   width: 80,
                   marginRight: 10,
                   marginLeft: 10,
                   borderRadius: 5,
+                  shadowColor: '#000',
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 6,
+                  elevation: 5,
                 }}
-                source={{uri: data?.poster}}
+                source={
+                  !data?.poster
+                    ? require('../assets/Images/404ImageNotFound.png') // Ganti path sesuai struktur kamu yaaa 😎
+                    : {
+                      uri: data?.poster,
+                      priority: FastImage.priority.normal,
+                    }
+                }
+                resizeMode={FastImage.resizeMode.cover}
               />
-              <View style={{flex: 1, paddingRight: 10}}>
+              <View style={{ flex: 1, paddingRight: 10 }}>
                 <Text
                   style={{
                     color: '#fff',
@@ -168,68 +187,67 @@ const WatchAnimeScreen = ({route}) => {
                 <Text
                   style={{
                     color: 'rgba(255,255,255,0.7)',
-                    fontFamily: 'NotoSans_SemiCondensed-Regular',
+                    fontFamily: 'Poppins-Regular',
                     fontSize: 14,
                   }}
                   numberOfLines={1}>
                   {data?.releasedOn}
                 </Text>
+                <View style={{ marginTop: 5 }}>
+                  <FlatList
+                    data={data?.genreList}
+                    horizontal
+                    keyExtractor={item => item.genreId}
+                    scrollEventThrottle={60}
+                    showsHorizontalScrollIndicator={false}
+                    renderItem={({ item }) => (
+                      <Pressable
+                        onPress={() =>
+                          navigation.navigate('ListAnimeGenre', {
+                            genreId: item.genreId,
+                            title: item.title,
+                          })
+                        }
+                        style={{
+                          backgroundColor: '#1E293B',
+                          paddingVertical: 4,
+                          paddingHorizontal: 10,
+                          borderRadius: 8,
+                          marginRight: 10,
+                        }}>
+                        <Text
+                          style={{
+                            color: '#fff',
+                            fontFamily: 'Poppins-Medium',
+                            fontSize: 12,
+                          }}
+                          numberOfLines={1}>
+                          {item.title}
+                        </Text>
+                      </Pressable>
+                    )}
+                  />
+                </View>
               </View>
-            </View>
-            <View style={{width: '100%', paddingBottom: 10}}>
-              <FlatList
-                data={data?.genreList}
-                horizontal
-                keyExtractor={item => item.genreId}
-                scrollEventThrottle={60}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{paddingHorizontal: 10}}
-                renderItem={({item}) => (
-                  <Pressable
-                    onPress={() =>
-                      navigation.navigate('ListAnimeGenre', {
-                        genreId: item.genreId,
-                        title: item.title,
-                      })
-                    }
-                    style={{
-                      backgroundColor: '#1E293B',
-                      paddingVertical: 5,
-                      paddingHorizontal: 10,
-                      borderRadius: 20,
-                      marginRight: 10,
-                    }}>
-                    <Text
-                      style={{
-                        color: '#fff',
-                        fontFamily: 'NotoSans_SemiCondensed-Bold',
-                        fontSize: 12,
-                      }}
-                      numberOfLines={1}>
-                      {item.title}
-                    </Text>
-                  </Pressable>
-                )}
-              />
             </View>
             <View
               style={{
                 width: '100%',
                 flexDirection: 'row',
-                justifyContent: 'space-between',
-                paddingHorizontal: 20,
+                paddingHorizontal: 10,
+                gap: 10,
                 paddingVertical: 10,
               }}>
               <Pressable
                 disabled={!data?.hasPrevEpisode}
                 style={{
-                  width: '45%',
-                  paddingVertical: 7,
+                  flex: 1,
+                  paddingVertical: 10,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  backgroundColor: data?.hasPrevEpisode ? '#1E293B' : '#64748B',
+                  backgroundColor: data?.hasPrevEpisode ? autoAdjustColor(colorImage.background) : '#64748B',
                   opacity: data?.hasPrevEpisode ? 1 : 0.5,
-                  borderRadius: 30,
+                  borderRadius: 8,
                 }}
                 onPress={() => {
                   if (data?.hasPrevEpisode && data?.prevEpisode) {
@@ -240,8 +258,8 @@ const WatchAnimeScreen = ({route}) => {
                 }}>
                 <Text
                   style={{
-                    color: '#fff',
-                    fontFamily: 'NotoSans_SemiCondensed-Bold',
+                    color: colorImage.text,
+                    fontFamily: 'Poppins-SemiBold',
                     fontSize: 15,
                   }}
                   numberOfLines={1}>
@@ -258,18 +276,18 @@ const WatchAnimeScreen = ({route}) => {
                   }
                 }}
                 style={{
-                  width: '45%',
-                  paddingVertical: 7,
+                  flex: 1,
+                  paddingVertical: 10,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  backgroundColor: data?.hasNextEpisode ? '#1E293B' : '#64748B',
+                  backgroundColor: data?.hasNextEpisode ? autoAdjustColor(colorImage.background) : '#64748B',
                   opacity: data?.hasNextEpisode ? 1 : 0.5,
-                  borderRadius: 30,
+                  borderRadius: 8,
                 }}>
                 <Text
                   style={{
-                    color: '#fff',
-                    fontFamily: 'NotoSans_SemiCondensed-Bold',
+                    color: colorImage.text,
+                    fontFamily: 'Poppins-SemiBold',
                     fontSize: 15,
                   }}
                   numberOfLines={1}>
@@ -282,7 +300,7 @@ const WatchAnimeScreen = ({route}) => {
                 width: '100%',
                 flexDirection: 'row',
                 justifyContent: 'space-between',
-                paddingHorizontal: 20,
+                paddingHorizontal: 10,
                 paddingBottom: 20,
               }}>
               <ServerSelector
@@ -290,64 +308,51 @@ const WatchAnimeScreen = ({route}) => {
                 setVideoUrl={setVideoUrl}
               />
             </View>
+            <RecommendedEpisodes episodes={data?.recommendedEpisodeList} />
             <View
               style={{
                 width: '100%',
-                paddingHorizontal: 20,
-              }}>
-              {data?.synopsis?.paragraphs?.length > 0 && (
-                <View
-                  style={{
-                    width: '100%',
-                  }}>
-                  {/* Title */}
-                  <Text
-                    style={{
-                      color: '#Fdfdfd',
-                      fontSize: 20,
-                      fontWeight: 'bold',
-                      fontFamily: 'OpenSans_SemiCondensed-Medium',
-                      marginBottom: 10,
-                    }}>
-                    Ringkasan
-                  </Text>
+                paddingHorizontal: 10,
+                paddingVertical: 16,
+                borderRadius: 12,
+              }}
+            >
+              {/* Judul */}
+              <Text
+                style={{
+                  color: '#FFFFFF',
+                  fontSize: 22,
+                  fontWeight: '700',
+                  fontFamily: 'OpenSans_SemiCondensed-Bold',
+                  marginBottom: 12,
+                }}
+              >
+              Ringkasan
+              </Text>
 
-                  {/* Content */}
-                  <View>
-                    <Text
-                      style={{
-                        color: '#EAEAEA',
-                        fontSize: 15,
-                        lineHeight: 26,
-                        fontFamily: 'OpenSans_SemiCondensed-Medium',
-                        textAlign: 'justify',
-                      }}>
-                      {expanded
-                        ? data?.synopsis?.paragraphs.join('\n\n')
-                        : data?.synopsis?.paragraphs[0].slice(0, 200) + '...'}
-                    </Text>
-                    <TouchableOpacity
-                      style={{paddingBottom: 30}}
-                      onPress={() => setExpanded(!expanded)}>
-                      <Text style={styles.moreText}>
-                        {expanded ? 'Show Less' : 'Show More'}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
+              {/* Isi Ringkasan */}
+              <Text
+                style={{
+                  color: '#CCCCCC',
+                  fontSize: 15,
+                  lineHeight: 28,
+                  fontFamily: 'Poppins-Medium',
+                  textAlign: 'justify',
+                }}
+              >
+                {data?.synopsis?.paragraphs?.join('\n\n')}
+              </Text>
             </View>
-            <RecommendedEpisodes episodes={data?.recommendedEpisodeList} />
             <View
               style={{
                 width: '100%',
                 flexDirection: 'row',
                 justifyContent: 'space-between',
-                paddingHorizontal: 20,
+                paddingHorizontal: 10,
                 paddingBottom: 20,
-                paddingTop: 50,
+                paddingTop: 20,
               }}>
-              <DownloadAnimeComponent animeData={data?.downloadUrl} />
+              <DownloadAnimeComponent animeData={data?.downloadUrl} colorImage={colorImage} />
             </View>
           </LinearGradient>
         </ScrollView>
