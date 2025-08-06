@@ -30,6 +30,9 @@ import PlayIcon from '../assets/Icons/DetailAnimeIcon/PlayIcon';
 import FastImage from '@d11/react-native-fast-image';
 import EpisodeCardWithPoster from '../components/DetailAnimeComponent/EpisodeCardWithPoster';
 import AnimeDetailCard from '../components/DetailAnimeComponent/AnimeDetailCard';
+import LoadingScreen from './LoadingScreen';
+import MiniMusicPlayer from '../components/DetailAnimeComponent/MiniMusicPlayer';
+import { getAnimeSongById, listAnimeSongs } from '../utils/getAnimeSongById';
 
 const DetailAnimeScreen = ({ route }) => {
   const [colorImage, setColorImage] = useState({
@@ -42,7 +45,9 @@ const DetailAnimeScreen = ({ route }) => {
   const [detailAnime, setDetailAnime] = useState([]);
   const [imageError, setImageError] = useState(false);
   const [episodeOne, setEpisodeOne] = useState(null);
+  const [animeMusic, setAnimeMusic] = useState(null);
   const [EpsAnimeWithPoster, setEpsAnimeWithPoster] = useState([]);
+  const [changeEpsPoster, setChangeEpsPoster] = useState(true);
   const navigation = useNavigation();
   const { animeId, animeTitle } = route.params;
   const source = useSelector((state) => state.animeSource.source);
@@ -122,6 +127,33 @@ const DetailAnimeScreen = ({ route }) => {
     }
   }, [episodeOne]);
 
+  useEffect(() => {
+  listAnimeSongs();
+}, []);
+
+  useEffect(() => {
+    const fetchMusic = async () => {
+      try {
+        console.log("anime id : ", animeId);
+        
+        const result = await getAnimeSongById(animeId);
+        console.log("data music : ", result);
+        
+
+        if (result.success && result.data) {
+          setAnimeMusic(result.data);
+        } else {
+          console.log("🎵 Tidak ada lagu untuk anime ini!");
+          setAnimeMusic(null); // Kosongin biar ga muncul player kalau datanya null
+        }
+      } catch (error) {
+        console.error("🔥 Gagal ambil lagu anime:", error);
+      }
+    };
+
+    fetchMusic();
+  }, [animeId]);
+
 
   const toggleSort = () => {
     setIsAscending(prev => !prev);
@@ -181,9 +213,7 @@ const DetailAnimeScreen = ({ route }) => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
       {isLoading ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#FFD700" />
-        </View>
+        <LoadingScreen />
       ) : (
         <FlatList
           data={[]}
@@ -293,13 +323,18 @@ const DetailAnimeScreen = ({ route }) => {
                     Daftar Episode ({detailAnime?.episodeList?.length || ''})
                   </Text>
                   <TouchableOpacity
+                    onPress={() => setChangeEpsPoster(!changeEpsPoster)}
+                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 }}>
+                    <Text style={{ color: '#fff', fontFamily: 'Poppins-Medium', fontSize: 14 }}>{changeEpsPoster ? "Missing Eps?" : "Return"}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
                     onPress={toggleSort}
                     style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
                     <Text style={{ marginRight: 8, color: '#fff', fontFamily: 'Poppins-Medium', fontSize: 14 }}>Sortir Eps</Text>
                     <SortirIcon size={20} color={'#fff'} />
                   </TouchableOpacity>
                 </View>
-                {(EpsAnimeWithPoster?.recommendedEpisodeList?.length > 0 && detailAnime?.episodeList?.length <= 50 ? (
+                {(changeEpsPoster && EpsAnimeWithPoster?.recommendedEpisodeList?.length > 0 && detailAnime?.episodeList?.length <= 50 ? (
                   <FlatList
                     data={sortedEpisodesWithPoster}
                     keyExtractor={(item, index) => `${item.title}-${index}`}
@@ -339,7 +374,7 @@ const DetailAnimeScreen = ({ route }) => {
                                 alignItems: 'center',
                                 justifyContent: 'center',
                               }}
-                              onPress={() => navigation.navigate('WatchAnime', { episodeId: item.episodeId })}
+                              onPress={() => navigation.navigate('WatchAnime', { episodeId: item.episodeId})}
                             >
                               <Text style={{ color: 'white', fontSize: 12, fontFamily: 'Poppins-Medium' }}>{item.title}</Text>
                             </TouchableOpacity>
@@ -347,14 +382,13 @@ const DetailAnimeScreen = ({ route }) => {
                           contentContainerStyle={{ padding: 10 }}
                         />
                       </>
-                      ) : (
+                    ) : (
                       <FlatList
                         data={sortedEpisodes}
                         keyExtractor={(item, index) => `${item.episodeId}-${index}`}
                         renderItem={({ item }) => (
                           <EpisodeCard
                             episodeNumber={item.title}
-                            colorImage={autoAdjustColor(colorImage.background)}
                             onPress={() => navigation.navigate('WatchAnime', { episodeId: item.episodeId })}
                           />
                         )}
@@ -369,6 +403,15 @@ const DetailAnimeScreen = ({ route }) => {
               </>
             )
           )}
+        />
+      )}
+      {animeMusic && !isLoading && (
+        <MiniMusicPlayer
+          posterUrl={animeMusic.posterUrl}
+          title={animeMusic.title}
+          artist={animeMusic.artist}
+          mp3Url={animeMusic.mp3Url}
+          backgroundColor = {autoAdjustColor(colorImage.background)}
         />
       )}
     </SafeAreaView>

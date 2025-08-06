@@ -12,6 +12,7 @@ import { fetchSchedule } from '../utils/api/service';
 import LinearGradient from 'react-native-linear-gradient';
 import ScheduleComponentList from '../components/ScheduleComponent/ScheduleComponentList';
 import { useSelector } from 'react-redux';
+import LoadingScreen from './LoadingScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -152,9 +153,7 @@ useEffect(() => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FFD700" />
-      </View>
+      <LoadingScreen />
     );
   }
 
@@ -236,12 +235,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 20,
     fontFamily: 'NotoSans_SemiCondensed-Bold',
-  },
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
 

@@ -7,21 +7,27 @@ import _404MessageComponentList from './../components/_404MessageComponentList';
 import LinearGradient from 'react-native-linear-gradient';
 import { auth, db } from '../../firebase/firebaseConfig';
 import { collection, getDocs } from "firebase/firestore";
+import LoadingScreen from './LoadingScreen';
+import GuestInfoScreen from './GuestInfoScreen';
 
 const CollectionScreen = () => {
   const [favoriteAnimes, setFavoriteAnimes] = useState([]);
-  const navigation = useNavigation();
+const [loading, setLoading] = useState(true);
+const navigation = useNavigation();
 
-  useEffect(() => {
-    loadFavoriteAnimes();
-  }, []);
+useEffect(() => {
+  loadFavoriteAnimes();
+}, []);
 
 const loadFavoriteAnimes = async () => {
   try {
     const user = auth.currentUser;
     if (!user) {
       console.warn("🛑 User belum login!");
-      return;
+      navigation.navigate('GuestScreen', {
+          description: "Fitur ini hanya bisa diakses oleh pengguna yang sudah login. Yuk masuk dulu~ 😄",
+          targetFeature: "Collection Anime",
+        });
     }
 
     const favoritesRef = collection(db, "users", user.uid, "favorites");
@@ -29,11 +35,15 @@ const loadFavoriteAnimes = async () => {
     const favorites = snapshot.docs.map((doc) => doc.data());
 
     setFavoriteAnimes(favorites);
+    setLoading(false);
   } catch (error) {
-    console.error("❌ Error loading favorites from Firestore:", error);
+    console.log("❌ Error loading favorites from Firestore:", error);
   }
 };
-  
+
+if (loading) {
+  return <LoadingScreen />;
+}
 
   return (
     <LinearGradient colors={['#000', 'rgba(81, 8, 10, 1)']} style={{ flex: 1, backgroundColor: 'rgb(12, 2, 27)', paddingBottom: 90, paddingTop: 20 }}>
@@ -59,6 +69,7 @@ const loadFavoriteAnimes = async () => {
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <TouchableOpacity
+              activeOpacity={0.7}
               onPress={() => navigation.navigate('DetailAnime', { animeId: item.animeId, animeTitle: item.title })}
               android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: false }}
               style={{margin: 15, alignItems: 'center', justifyContent: 'center' }}>

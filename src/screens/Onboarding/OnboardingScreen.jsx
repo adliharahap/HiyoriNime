@@ -5,7 +5,7 @@ const { width: screenWidth } = Dimensions.get('window');
 const ImagePage1 = require('../../assets/Images/OnboardingImage/Page1.jpg');
 const ImagePage2 = require('../../assets/Images/OnboardingImage/Page10.png');
 const ImagePage3 = require('../../assets/Images/OnboardingImage/Page9.png');
-const ImagePage4 = require('../../assets/Images/OnboardingImage/Page8.png');
+const ImagePage4 = require('../../assets/Images/OnboardingImage/Page7.png');
 
 const OnboardingScreen = () => {
   return (

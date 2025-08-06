@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, Animated, Platform, StyleSheet } from 'react-native';
 
-const EpisodeCard = ({ episodeNumber, onPress,  colorImage}) => {
+const EpisodeCard = ({ episodeNumber, onPress,  colorImage= 'rgba(255, 255, 255, 0.1)'}) => {
   const [scale] = useState(new Animated.Value(1));
 
   const handlePressIn = () => {

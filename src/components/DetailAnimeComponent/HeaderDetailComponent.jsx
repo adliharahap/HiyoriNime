@@ -1,11 +1,26 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import StarIcon from '../../assets/Icons/StarIcon'
 import { useNavigation } from '@react-navigation/native';
 import BackIcon from '../../assets/Icons/BackIcon';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HeaderDetailComponent = ({toggleFavorite, isFavorite}) => {
     const navigation = useNavigation();
+    const [guest, setGuest] = useState(false);
+    
+    useEffect(() => {
+      const CheckGuest = async() => {
+        const isGuest = await AsyncStorage.getItem('isGuest');
+
+        if (isGuest === 'true') {
+          setGuest(true);
+          return;
+        }
+      }
+      CheckGuest();
+    }, []);
+
   return (
     <View style={styles.header}>
         <TouchableOpacity
@@ -14,12 +29,14 @@ const HeaderDetailComponent = ({toggleFavorite, isFavorite}) => {
         }}>
         <BackIcon size={30} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
-        <StarIcon size={16} />
-        <Text style={styles.favoriteText}>
-            {isFavorite ? 'Remove From Favorite' : 'Add To Favorite'}
-        </Text>
-        </TouchableOpacity>
+        {!guest && (
+          <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
+            <StarIcon size={16} />
+            <Text style={styles.favoriteText}>
+                {isFavorite ? 'Remove From Favorite' : 'Add To Favorite'}
+            </Text>
+          </TouchableOpacity>
+        )}
     </View>
   )
 }

@@ -29,7 +29,7 @@ const HomeHeaderProfile = () => {
         <FastImage
           style={{height: 65, width: 65, borderRadius: 50, borderWidth: 1.1, borderColor: '#fff'}}
           source={
-            dataUser.photo || dataUser.photoURL
+            dataUser?.photo || dataUser?.photoURL
               ? {uri: dataUser.photo || dataUser.photoURL, priority: FastImage.priority.normal}
               : require('../../assets/Images/Default_Profile_Screen.jpg')
           }
@@ -53,7 +53,7 @@ const HomeHeaderProfile = () => {
             fontSize: 16,
           }}
           numberOfLines={2}>
-          {dataUser.name || 'User'}
+          {dataUser?.name || 'User'}
         </Text>
         <Text
           style={{
@@ -62,7 +62,7 @@ const HomeHeaderProfile = () => {
             fontSize: 12,
           }}
           numberOfLines={1}>
-          {dataUser.email || "login menggunakan " + dataUser.provider}
+          {dataUser?.email || "login Via " + dataUser?.provider || "Login sebagai Guest"}
         </Text>
       </View>
       <View

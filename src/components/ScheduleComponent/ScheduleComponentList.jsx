@@ -29,6 +29,7 @@ const ListAnimeScheduleBackground = ({ title, genre, rating, estimation, type, I
 
   return (
     <TouchableOpacity
+      activeOpacity={0.7}
       onPress={() => navigation.navigate('DetailAnime', { animeId, animeTitle: title })}
       style={styles.card}
     >

@@ -21,7 +21,7 @@ const getCurrentUserInfo = async () => {
 
   // 🌟 Default values
   const defaultName = email?.split("@")[0] || "User";
-  const defaultPhoto = "https://i.pinimg.com/736x/72/55/d5/7255d538cacadc975b299f17e2bcd10b.jpg";
+  const defaultPhoto = "https://raw.githubusercontent.com/adliharahap/hiyorinime-assets/refs/heads/main/DefaultProfileImage/Default_Profile_Screen.jpg";
 
   let updated = false;
 

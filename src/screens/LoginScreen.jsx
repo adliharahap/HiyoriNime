@@ -74,6 +74,7 @@ const LoginScreen = () => {
         `Successfully signed in as ${email}`,
         ToastAndroid.SHORT,
       );
+      await AsyncStorage.setItem('isGuest', 'false');
       navigation.replace('MainScreen');
     } catch (err) {
       let message = '';
@@ -128,6 +129,7 @@ const LoginScreen = () => {
           ToastAndroid.SHORT,
         );
         await AsyncStorage.setItem('onboardingStatus', 'done');
+        await AsyncStorage.setItem('isGuest', 'false');
         setTimeout(() => {
           navigation.replace('MainScreen');
         }, 1000);
@@ -165,20 +167,20 @@ const LoginScreen = () => {
     }
   };
 
-  const handleGuestLogin = async () => {
-    try {
-      const userCredential = await signInAnonymously(auth);
-      const user = userCredential.user;
-      console.log("User ID:", user.uid);
+const handleGuestLogin = async () => {
+  try {
+    // Simpan status guest login ke AsyncStorage
+    await AsyncStorage.setItem('isGuest', 'true');
 
-      // Arahkan ke halaman utama
-      navigation.replace('MainScreen');
-    } catch (error) {
-      console.error("Error masuk tamu:", error);
-      Alert.alert("Gagal Masuk Tamu", error.message);
-    }
-  };
+    console.log("🎉 Masuk sebagai Tamu!");
+    await AsyncStorage.setItem('onboardingStatus', 'done');
 
+    navigation.replace('MainScreen');
+  } catch (error) {
+    console.error("❌ Error saat guest login:", error);
+    Alert.alert("Gagal Masuk Tamu", "Terjadi kesalahan saat masuk sebagai tamu.");
+  }
+};
   return (
     <View style={{flex: 1}}>
       <ImageBackground

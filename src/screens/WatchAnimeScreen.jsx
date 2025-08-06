@@ -1,15 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
   Text,
   ScrollView,
   Pressable,
-  Image,
-  TouchableOpacity,
   FlatList,
-  BackHandler,
-  ActivityIndicator,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import Video from 'react-native-video';
@@ -24,12 +20,15 @@ import { autoAdjustColor, darkenColor, getDominantColor } from '../utils/ImageCo
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import FastImage from '@d11/react-native-fast-image';
+import LoadingScreen from './LoadingScreen';
+import { saveWatchHistory } from '../utils/SaveWatchHistory';
 
 const WatchAnimeScreen = ({ route }) => {
   useKeepAwake();
   const [data, setData] = useState([]); // State untuk menyimpan data
   const [loading, setLoading] = useState(true); // State untuk loading
   const [expanded, setExpanded] = useState(false);
+  const hasSaved = useRef(false);
   const [colorImage, setColorImage] = useState({
     background: '#1b1b1b',
     text: '#ffffff',
@@ -39,6 +38,7 @@ const WatchAnimeScreen = ({ route }) => {
   const { episodeId } = route.params;
   const navigation = useNavigation();
   const source = useSelector((state) => state.animeSource.source);
+  const dataUser = useSelector(state => state.user.userData);
 
   const FetchAnimeAndColor = async () => {
     try {
@@ -73,12 +73,98 @@ const WatchAnimeScreen = ({ route }) => {
     FetchAnimeAndColor();
   }, []);
 
+  const getPosterFromRecommended = (episodeId, recommendedList, defaultPoster) => {
+    console.log('--- 🚀 Memulai Fungsi getPosterFromRecommended ---');
+    console.log('Mencari episodeId:', episodeId);
+    console.log('Menggunakan poster default:', defaultPoster);
+
+    if (!recommendedList || !Array.isArray(recommendedList)) {
+      console.log('⚠️ recommendedList tidak valid. Menggunakan poster default.');
+      return defaultPoster;
+    }
+
+    // --- Langkah 1: Mencari berdasarkan href (Metode Paling Andal) ---
+    console.log('\n[Langkah 1] Mencoba mencocokkan berdasarkan `href`...');
+    const byHref = recommendedList.find((item) => {
+      if (!item.href) {
+        console.log('   - Melewatkan item karena tidak memiliki `href`.');
+        return false;
+      }
+      // Mengambil ID unik dari string href
+      const hrefId = item.href.replace('/samehadaku/episode/', '').replace(/\/$/, '');
+      console.log(`   - Membandingkan: [${hrefId}] vs [${episodeId}]`);
+      return hrefId === episodeId;
+    });
+
+    if (byHref) {
+      console.log('✅ SUKSES (Langkah 1): Ditemukan kecocokan `href`.');
+      console.log('Poster yang ditemukan:', byHref.poster);
+      console.log('--------------------------------------------------');
+      return byHref.poster;
+    } else {
+      console.log('❌ GAGAL (Langkah 1): Tidak ada `href` yang cocok.');
+    }
+
+    // --- Langkah 2: Mencari berdasarkan episodeId (Sebagai Cadangan) ---
+    console.log('\n[Langkah 2] Mencoba mencocokkan berdasarkan `episodeId` (cadangan)...');
+    const byEpisodeId = recommendedList.find(
+      (item) => item.episodeId === episodeId
+    );
+
+    if (byEpisodeId) {
+      console.log('✅ SUKSES (Langkah 2): Ditemukan kecocokan `episodeId`.');
+      console.log('Poster yang ditemukan:', byEpisodeId.poster);
+      console.log('--------------------------------------------------');
+      return byEpisodeId.poster;
+    } else {
+      console.log('❌ GAGAL (Langkah 2): Tidak ada `episodeId` yang cocok.');
+    }
+
+    // --- Langkah 3: Fallback ke poster utama ---
+    console.log('\n[Langkah 3] Tidak ada kecocokan ditemukan. Menggunakan poster default.');
+    console.log('--------------------------------------------------');
+    return defaultPoster;
+  };
+
+
+  useEffect(() => {
+    const saveHistory = async () => {
+      try {
+
+        if (!dataUser?.uid || hasSaved.current) return;
+
+        // Cek apakah semua data tersedia
+        if (!data?.title || !data?.poster || !data?.genreList) {
+          console.log('Data belum lengkap untuk disimpan ke history');
+          return;
+        }
+
+        hasSaved.current = true;
+
+
+        await saveWatchHistory(dataUser?.uid, {
+          animeId: episodeId,
+          title: data.title,
+          poster: getPosterFromRecommended(
+            episodeId,
+            data.recommendedEpisodeList,
+            data.poster
+          ),
+          genreList: data.genreList,
+        });
+      } catch (err) {
+        console.error('Gagal menyimpan riwayat:', err);
+      }
+    };
+
+    saveHistory();
+  }, [episodeId, data]);
+
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
       {loading ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#FFD700" />
-        </View>
+        <LoadingScreen />
       ) : (
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
           <View
@@ -327,7 +413,7 @@ const WatchAnimeScreen = ({ route }) => {
                   marginBottom: 12,
                 }}
               >
-              Ringkasan
+                Ringkasan
               </Text>
 
               {/* Isi Ringkasan */}

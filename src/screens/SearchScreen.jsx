@@ -12,6 +12,7 @@ import CloseIcon from '../assets/Icons/CloseIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSelector } from 'react-redux';
+import AnimeNotFouncComponent from '../components/SearchComponent/AnimeNotFoundComponent';
 
 const SearchScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -121,7 +122,7 @@ const handleSearch = async (page = 1, query = searchQuery) => {
                     ) : searchResults.length > 0 ? (
                       <ListAnimeSearch animeList={searchResults} />
                     ) : (
-                        <Text style={{ color: '#aaa', textAlign: 'center', marginTop: 20 }}>Anime tidak ditemukan.</Text>
+                        <AnimeNotFouncComponent />
                     )
                 )}
                 {isSearching && totalPages > 1 && (

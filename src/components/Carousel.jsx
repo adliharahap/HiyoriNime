@@ -77,28 +77,28 @@ const Carousel = ({children, scroll = false}) => {
     {
       title: 'Welcome To HiyoriNime',
       subtitle: [
-        'Siap lanjut nonton hari ini?',
-        'Cari anime favoritmu dan gas nonton!',
+        'Hai! Senang bertemu denganmu di HiyoriNime.',
+        'Yuk, mulai jelajahi cerita favoritmu sekarang!',
       ],
     },
     {
       title: 'Tandai Anime Favoritmu',
       subtitle: [
-        'Simpan anime kesukaan kamu~',
-        'Biar bisa diakses dengan mudah!',
+        'Udah nemu anime yang asik? Tandai aja!',
+        'Biar gampang kalau mau nonton lagi nanti.',
       ],
     },
     {
-      title: 'Update Anime Setiap Hari',
+      title: 'Update Setiap Hari',
       subtitle: [
-        'Jangan ketinggalan episode terbaru~',
+        'Nggak ada lagi kata "ketinggalan episode"!',
         'Anime ongoing selalu update otomatis!',
       ],
     },
     {
       title: 'Unduh Anime Favoritmu!',
       subtitle: [
-        'Download anime biar bisa ditonton kapan aja~',
+        'Download sepuasnya, tonton di mana aja.',
         'Kualitas video Full HD, jernih maksimal!',
       ],
     },

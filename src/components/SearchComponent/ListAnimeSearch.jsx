@@ -1,9 +1,6 @@
 import {
   View,
   Text,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
   Image,
   Pressable,
 } from 'react-native';

@@ -23,6 +23,11 @@ import SignUpScreen from './src/screens/SignUpEmailScreen/SignUpScreen';
 import VerifyEmailScreen from './src/screens/SignUpEmailScreen/VerifyEmailScreen';
 import { GOOGLE_WEB_CLIENT_ID } from '@env';
 import EditProfile from './src/components/ProfileComponent/EditProfile';
+import DeleteAccountOrResetData from './src/components/ProfileComponent/DeleteAccountOrResetData';
+import HubungiDeveloperScreen from './src/components/ProfileComponent/HubungiDeveloperScreen';
+import PrivacyPolicyScreen from './src/components/ProfileComponent/PrivacyPolicyScreen';
+import GuestInfoScreen from './src/screens/GuestInfoScreen';
+import HistoryAnimeScreen from './src/screens/HistoryAnimeScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -67,6 +72,11 @@ const App = () => {
           <Stack.Screen name="Lisence" component={LisenceScreen} />
           <Stack.Screen name="About" component={AboutScreen} />
           <Stack.Screen name="EditProfile" component={EditProfile} />
+          <Stack.Screen name="DeleteAccount" component={DeleteAccountOrResetData} />
+          <Stack.Screen name="HubungiDeveloper" component={HubungiDeveloperScreen} />
+          <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+          <Stack.Screen name="HistoryAnime" component={HistoryAnimeScreen} />
+          <Stack.Screen name="GuestScreen" component={GuestInfoScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>
